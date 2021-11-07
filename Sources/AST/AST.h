@@ -3,6 +3,21 @@
 namespace ParaCL
 {
 
+struct AbstractNode;
+
+struct Tree final
+{
+    // ToDo: private?
+    AbstractNode* top_ = nullptr;
+
+    Tree (const Tree&) = delete;
+    Tree (Tree&&) = delete;
+    Tree& operator = (const Tree&) = delete;
+    Tree& operator = (Tree&&) = delete;
+
+    ~Tree();
+};
+
 // ToDo: class or struct, non-private fields? How to get access in child?
 struct AbstractNode
 {
@@ -27,7 +42,11 @@ struct AbstractNode
     AbstractNode (AbstractNode* prev, NodeType type);
     virtual ~AbstractNode() = 0;
 
-    // ToDo: delete copy, move ctors and operator= (&, &&)
+    AbstractNode (const AbstractNode&) = delete;
+    AbstractNode (AbstractNode&&) = delete;
+    AbstractNode& operator = (const AbstractNode&) = delete;
+    AbstractNode& operator = (AbstractNode&&) = delete;
+
     // ToDo: SetPrev() ?
 };
 
