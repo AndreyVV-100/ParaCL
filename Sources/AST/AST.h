@@ -3,7 +3,7 @@
 namespace ParaCL
 {
 
-// ToDo: class or struct, non-private fields? How to get access in dauter?
+// ToDo: class or struct, non-private fields? How to get access in child?
 struct AbstractNode
 {
     enum class NodeType
@@ -33,7 +33,7 @@ struct AbstractNode
 
 struct VariableNode final : public AbstractNode
 {
-    // static Scope - now no class for it // const?
+    // static Scope - now we havn't class for it // const?
     std::string name_;
 
     VariableNode (std::string name, AbstractNode* prev = nullptr):
@@ -44,7 +44,7 @@ struct VariableNode final : public AbstractNode
 
 struct ConstNode final : public AbstractNode
 {
-    int value_;
+    int value_; // TODO: rework for all other types
 
     ConstNode (int value, AbstractNode* prev = nullptr):
         AbstractNode (prev, NodeType :: CONST),
