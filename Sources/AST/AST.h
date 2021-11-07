@@ -39,7 +39,10 @@ struct AbstractNode
 
     public:
 
-    AbstractNode (AbstractNode* prev, NodeType type);
+    AbstractNode (AbstractNode* prev, NodeType type):
+        prev_ (prev),
+        type_ (type)
+    { ; }
     virtual ~AbstractNode() = 0;
 
     AbstractNode (const AbstractNode&) = delete;
@@ -115,7 +118,7 @@ struct OperationNode final : public AbstractNode
     OpType op_type_;
 
     OperationNode (OpType op_type, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: CONST),
+        AbstractNode (prev, NodeType :: OPERATION),
         op_type_ (op_type)
     { ; }
 };
