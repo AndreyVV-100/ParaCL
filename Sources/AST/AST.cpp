@@ -1,7 +1,17 @@
-#include "AST.h"
+#include "AST.hpp"
 
 namespace ParaCL
 {
+    AbstractNode* make_val(int val) { return new ConstNode{val}; }
+    AbstractNode* make_op(AbstractNode* lhs, OpType op, AbstractNode* rhs)
+    {
+        AbstractNode* tmp = new OperationNode{op};
+        tmp->left_  = lhs;
+        tmp->right_ = rhs;
+        return tmp;
+    }
+
+
     Tree :: ~Tree()
     {
         AbstractNode* node_deleter = top_;
@@ -32,4 +42,16 @@ namespace ParaCL
             node_deleter = prev;
         }
     }
+
+    void Tree::dump() const
+    {
+        top_->dump();
+        
+        if (top_->left_)
+            top_->left_->dump();
+        if (top_->right_)
+            top_->right_->dump();
+    }
+
+
 } // End of namespace ParaCL
