@@ -29,7 +29,5 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_include_directories(${PROJECT_NAME} 
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/AST
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Driver
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Lexer
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Parser
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )
