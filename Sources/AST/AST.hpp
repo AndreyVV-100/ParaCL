@@ -4,6 +4,45 @@
 namespace ParaCL
 {
 
+enum class OpType // ToDo: print name, move this
+{
+    ADD = 0,    // +
+    SUB = 1,    // -
+    MUL = 2,    // *
+    DIV = 3,    // /
+    REM = 4,    // % - remainder of division
+
+    ASS = 5,    // = - ♂assignment♂
+    ORD = 6,    // ; - order
+
+    EQU = 7,    // ==
+    EQG = 8,    // >=
+    EQL = 9,    // <=
+    EQN = 10,   // !=
+    STG = 11,   // > - strictly greater
+    STL = 12,   // <
+
+    LAND = 13,  // && - logical and
+    LOR  = 14,  // ||
+    LNOT = 15,  // !
+
+    BAND = 16,  // & - binary and
+    BOR  = 17,  // |
+    BNOT = 18,  // ~
+    BXOR = 19,  // ^
+    
+    SHL  = 20,  // <<
+    SHR  = 21,  // >>
+
+    PLUS  = 22, // + - unary plus
+    MINUS = 23, // - - unary minus
+
+    PRE_INC  = 24, // ++x
+    POST_INC = 25, // x++
+    PRE_DEC  = 26, // --x
+    POST_DEC = 27  // x--
+};
+
 struct AbstractNode;
 
 struct Tree final
@@ -16,10 +55,11 @@ struct Tree final
     Tree& operator = (const Tree&) = delete;
     Tree& operator = (Tree&&) = delete;
 
+    Tree() = default;
     ~Tree();
 
-    void PrintTree (const std::string& filename); // ToDo: output filename?
-    void PrintTree (std::ostream& output = std::cout);
+    void PrintTree (const std::string& filename) const; // ToDo: output filename?
+    void PrintTree (std::ostream& output = std::cout) const;
 };
 
 // ToDo: class or struct, non-private fields? How to get access in child?
@@ -47,20 +87,23 @@ struct AbstractNode
         prev_ (prev),
         type_ (type)
     { ; }
-    virtual ~AbstractNode() = 0;
+    virtual ~AbstractNode() = default;
 
     AbstractNode (const AbstractNode&) = delete;
     AbstractNode (AbstractNode&&) = delete;
     AbstractNode& operator = (const AbstractNode&) = delete;
     AbstractNode& operator = (AbstractNode&&) = delete;
 
-    void PrintTypeName          (std::ostream& output);
-    void GraphPrintConnections  (std::ostream& output);
-    void GraphPrintHeaders      (std::ostream& output);
-    virtual void GraphPrintInfo (std::ostream& output);
+    void PrintTypeName          (std::ostream& output) const;
+    void GraphPrintConnections  (std::ostream& output) const;
+    void GraphPrintHeaders      (std::ostream& output) const;
+    virtual void GraphPrintInfo (std::ostream& output) const = 0;
 
     // ToDo: SetPrev() ?
 };
+
+AbstractNode* MakeVal (int val);
+AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs);
 
 struct VariableNode final : public AbstractNode
 {
@@ -72,7 +115,7 @@ struct VariableNode final : public AbstractNode
         name_ (name)
     { ; }
 
-    void GraphPrintInfo (std::ostream& output) override
+    void GraphPrintInfo (std::ostream& output) const override
     {
         output << name_;
         return;
@@ -88,7 +131,7 @@ struct ConstNode final : public AbstractNode
         value_ (value)
     { ; }
 
-    void GraphPrintInfo (std::ostream& output) override
+    void GraphPrintInfo (std::ostream& output) const override
     {
         output << value_;
         return;
@@ -97,45 +140,6 @@ struct ConstNode final : public AbstractNode
 
 struct OperationNode final : public AbstractNode
 {
-    enum class OpType // ToDo: print name
-    {
-        ADD = 0,    // +
-        SUB = 1,    // -
-        MUL = 2,    // *
-        DIV = 3,    // /
-        REM = 4,    // % - remainder of division
-
-        ASS = 5,    // = - ♂assignment♂
-        ORD = 6,    // ; - order
-
-        EQU = 7,    // ==
-        EQG = 8,    // >=
-        EQL = 9,    // <=
-        EQN = 10,   // !=
-        STG = 11,   // > - strictly greater
-        STL = 12,   // <
-
-        LAND = 13,  // && - logical and
-        LOR  = 14,  // ||
-        LNOT = 15,  // !
-
-        BAND = 16,  // & - binary and
-        BOR  = 17,  // |
-        BNOT = 18,  // ~
-        BXOR = 19,  // ^
-        
-        SHL  = 20,  // <<
-        SHR  = 21,  // >>
-
-        PLUS  = 22, // + - unary plus
-        MINUS = 23, // - - unary minus
-
-        PRE_INC  = 24, // ++x
-        POST_INC = 25, // x++
-        PRE_DEC  = 26, // --x
-        POST_DEC = 27  // x--
-    };
-
     OpType op_type_;
 
     OperationNode (OpType op_type, AbstractNode* prev = nullptr):
@@ -143,7 +147,7 @@ struct OperationNode final : public AbstractNode
         op_type_ (op_type)
     { ; }
 
-    void GraphPrintInfo (std::ostream& output) override
+    void GraphPrintInfo (std::ostream& output) const override
     {
         output << static_cast <int> (op_type_);
         return;
@@ -165,7 +169,7 @@ struct ConditionNode final : public AbstractNode
         cond_type_ (cond_type)
     { ; }
 
-    void GraphPrintInfo (std::ostream& output) override
+    void GraphPrintInfo (std::ostream& output) const override
     {
         output << static_cast <int> (cond_type_);
         return;
@@ -184,7 +188,7 @@ struct FunctionCallNode final : public AbstractNode
         name_ (name)
     { ; }
 
-    void GraphPrintInfo (std::ostream& output) override
+    void GraphPrintInfo (std::ostream& output) const override
     {
         output << name_;
         return;

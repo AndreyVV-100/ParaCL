@@ -55,9 +55,9 @@ parser::token_type yylex(parser::semantic_type* yylval,
 
 program: expr               { driver->insert($1); }
 
-expr: NUMBER                { $$ = ParaCL::make_val($1); }
-    | expr PLUS NUMBER      { $$ = ParaCL::make_op($1, ParaCL::OpType::ADD, ParaCL::make_val($3)); }
-    | expr MINUS NUMBER     { $$ = ParaCL::make_op($1, ParaCL::OpType::SUB, ParaCL::make_val($3)); }
+expr: NUMBER                { $$ = ParaCL::MakeVal($1); }
+    | expr PLUS NUMBER      { $$ = ParaCL::MakeOp($1, ParaCL::OpType::ADD, ParaCL::MakeVal($3)); }
+    | expr MINUS NUMBER     { $$ = ParaCL::MakeOp($1, ParaCL::OpType::SUB, ParaCL::MakeVal($3)); }
 ;
 
 %%

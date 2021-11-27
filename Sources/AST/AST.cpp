@@ -34,7 +34,7 @@ namespace ParaCL
         }
     }
 
-    void Tree::PrintTree (const std::string& filename)
+    void Tree::PrintTree (const std::string& filename) const
     {
         std::fstream output;
         output.open (filename, std::ios::out);
@@ -50,7 +50,7 @@ namespace ParaCL
         return;
     }
 
-    void Tree::PrintTree (std::ostream& output)
+    void Tree::PrintTree (std::ostream& output) const
     {
         output << "digraph G {\n"
                   "graph [\n"
@@ -65,9 +65,10 @@ namespace ParaCL
 
         top_->GraphPrintHeaders     (output);
         top_->GraphPrintConnections (output);
+        output << "}\n";
     }
 
-    void AbstractNode::GraphPrintConnections (std::ostream& output)
+    void AbstractNode::GraphPrintConnections (std::ostream& output) const
     {
         // ToDo: copypaste?
         if (left_)
@@ -83,52 +84,61 @@ namespace ParaCL
         }
     }
 
-    void AbstractNode::PrintTypeName (std::ostream& output) // ToDo: It's OK?
+    void AbstractNode::PrintTypeName (std::ostream& output) const // ToDo: It's OK?
     {
         switch (type_)
         {
-            case VARIABLE:
+            case NodeType :: VARIABLE:
                 output << "Variable";
                 break;
 
-            case CONST:
+            case NodeType :: CONST:
                 output << "Const";
                 break;
 
-            case OPERATION:
+            case NodeType :: OPERATION:
                 output << "Operation";
                 break;
 
-            case CONDITION:
+            case NodeType :: CONDITION:
                 output << "Condition";
                 break;
 
-            case FUNCTION_CALL:
+            case NodeType :: FUNCTION_CALL:
                 output << "Function call";
                 break;
 
-            case FUNCTION_DECL:
+            case NodeType :: FUNCTION_DECL:
                 output << "Function declaration";
                 break;
         }
     }
 
-    void AbstractNode::GraphPrintHeaders (std::ostream& output) override
+    void AbstractNode::GraphPrintHeaders (std::ostream& output) const
     {
         output << '"' << this << "\" [\n" << "label = \"<f0> ";
-        PrintTypeName();
+        PrintTypeName(output);
         output << " | ";
-        GraphPrintInfo(); 
+        GraphPrintInfo(output); 
         output <<"\"\n"
                << "shape = \"record\"\n"
                << "];\n";
 
         if (left_)
-            left_->GraphPrintHeaders();
+            left_->GraphPrintHeaders(output);
         if (right_)
-            right_->GraphPrintHeaders();
+            right_->GraphPrintHeaders(output);
         
         return;
     }
     
+    AbstractNode* MakeVal (int val) { return new ConstNode{val}; }
+    AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs)
+    {
+        AbstractNode* tmp = new OperationNode{op};
+        tmp->left_ = lhs;
+        tmp->right_ = rhs;
+        return tmp;
+    }
+
 } // End of namespace ParaCL

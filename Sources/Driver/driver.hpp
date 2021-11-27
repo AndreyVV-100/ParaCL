@@ -45,7 +45,7 @@ public:
   }
 
   void printout() const {
-      tree.dump();
+      tree.PrintTree ("bebra.dot");
   }
 };
 
