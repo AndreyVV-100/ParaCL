@@ -1,46 +1,47 @@
+#pragma once
+
 #include <string>
 #include <iostream>
 
-namespace ParaCL
+namespace AST
 {
 
-enum class OpType // ToDo: print name, move this
+enum OpType // ToDo: print name, move this
 {
-    ADD = 0,    // +
-    SUB = 1,    // -
-    MUL = 2,    // *
-    DIV = 3,    // /
-    REM = 4,    // % - remainder of division
+    ADD = 0,            // +
+    SUB = 1,            // -
+    MUL = 2,            // *
+    DIV = 3,            // /
+    REM = 4,            // % - remainder of division
 
-    ASS = 5,    // = - ♂assignment♂
-    ORD = 6,    // ; - order
+    ASS = 5,            // = - ♂assignment♂
 
-    EQU = 7,    // ==
-    EQG = 8,    // >=
-    EQL = 9,    // <=
-    EQN = 10,   // !=
-    STG = 11,   // > - strictly greater
-    STL = 12,   // <
+    EQU = 7,            // ==
+    EQG = 8,            // >=
+    EQL = 9,            // <=
+    EQN = 10,           // !=
+    STG = 11,           // > - strictly greater
+    STL = 12,           // <
 
-    LAND = 13,  // && - logical and
-    LOR  = 14,  // ||
-    LNOT = 15,  // !
+    LAND = 13,          // && - logical and
+    LOR  = 14,          // ||
+    LNOT = 1015,        // !
 
-    BAND = 16,  // & - binary and
-    BOR  = 17,  // |
-    BNOT = 18,  // ~
-    BXOR = 19,  // ^
-    
-    SHL  = 20,  // <<
-    SHR  = 21,  // >>
+    BAND = 16,          // & - binary and
+    BOR  = 17,          // |
+    BNOT = 1018,        // ~
+    BXOR = 19,          // ^
 
-    PLUS  = 22, // + - unary plus
-    MINUS = 23, // - - unary minus
+    SHL  = 20,          // <<
+    SHR  = 21,          // >>
 
-    PRE_INC  = 24, // ++x
-    POST_INC = 25, // x++
-    PRE_DEC  = 26, // --x
-    POST_DEC = 27  // x--
+    PLUS  = 1022,       // + - unary plus
+    MINUS = 1023,       // - - unary minus
+
+    PRE_INC  = 1024,    // ++x
+    POST_INC = 1025,    // x++
+    PRE_DEC  = 1026,    // --x
+    POST_DEC = 1027     // x--
 };
 
 struct AbstractNode;
@@ -72,7 +73,8 @@ struct AbstractNode
         OPERATION     = 2,
         CONDITION     = 3,
         FUNCTION_CALL = 4,
-        FUNCTION_DECL = 5  // Now not used
+        FUNCTION_DECL = 5,  // Now not used
+        ORDER_OP      = 6
     };
 
     AbstractNode* prev_, 
@@ -191,6 +193,22 @@ struct FunctionCallNode final : public AbstractNode
     void GraphPrintInfo (std::ostream& output) const override
     {
         output << name_;
+        return;
+    }
+};
+
+struct OrderNode final : public AbstractNode
+{
+    OrderNode (AbstractNode *left, AbstractNode *right, AbstractNode *prev):
+        AbstractNode (prev, AbstractNode::NodeType::ORDER_OP) 
+    {
+        AbstractNode::left_  = left;
+        AbstractNode::right_ = right;
+    }
+
+    void GraphPrintInfo (std::ostream& output) const override
+    {
+        output << ";\n";
         return;
     }
 };

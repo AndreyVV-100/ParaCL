@@ -22,7 +22,7 @@ namespace yy {
 
 class Driver {
   FlexLexer *plex_;
-  ParaCL::Tree tree;
+  AST::Tree tree;
 
 public:
   Driver(FlexLexer *plex) : plex_(plex), tree{} {}
@@ -40,7 +40,7 @@ public:
     return !res;
   }
 
-  void insert(ParaCL::AbstractNode* other) {
+  void insert(AST::AbstractNode* other) {
       tree.top_ = other;
   }
 

@@ -46,7 +46,7 @@ parser::token_type yylex(parser::semantic_type* yylval,
 ;
 
 %token <int> NUMBER
-%nterm <ParaCL::AbstractNode*> expr
+%nterm <AST::AbstractNode*> expr
 %left '+' '-'
 
 %start program
@@ -55,9 +55,9 @@ parser::token_type yylex(parser::semantic_type* yylval,
 
 program: expr               { driver->insert($1); }
 
-expr: NUMBER                { $$ = ParaCL::MakeVal($1); }
-    | expr PLUS NUMBER      { $$ = ParaCL::MakeOp($1, ParaCL::OpType::ADD, ParaCL::MakeVal($3)); }
-    | expr MINUS NUMBER     { $$ = ParaCL::MakeOp($1, ParaCL::OpType::SUB, ParaCL::MakeVal($3)); }
+expr: NUMBER                { $$ = AST::MakeVal($1); }
+    | expr PLUS NUMBER      { $$ = AST::MakeOp($1, AST::OpType::ADD, AST::MakeVal($3)); }
+    | expr MINUS NUMBER     { $$ = AST::MakeOp($1, AST::OpType::SUB, AST::MakeVal($3)); }
 ;
 
 %%

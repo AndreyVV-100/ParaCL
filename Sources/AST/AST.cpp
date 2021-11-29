@@ -1,7 +1,7 @@
 #include "AST.hpp"
 #include <fstream>
 
-namespace ParaCL
+namespace AST
 {
     Tree :: ~Tree()
     {
@@ -136,6 +136,13 @@ namespace ParaCL
     AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs)
     {
         AbstractNode* tmp = new OperationNode{op};
+
+        if (lhs)
+            lhs->prev_ = tmp;
+
+        if (rhs)
+            rhs->prev_ = tmp;
+
         tmp->left_ = lhs;
         tmp->right_ = rhs;
         return tmp;

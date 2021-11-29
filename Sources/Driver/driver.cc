@@ -1,4 +1,5 @@
 #include "driver.hpp"
+#include "interpretator.hpp"
 
 int yyFlexLexer::yywrap() { return 1; }
 
