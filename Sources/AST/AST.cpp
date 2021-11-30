@@ -1,4 +1,4 @@
-#include "AST.hpp"
+#include "Node.hpp"
 #include <fstream>
 
 namespace AST
@@ -134,13 +134,13 @@ namespace AST
         return;
     }
     
-    AbstractNode* MakeVal (int val)           { return new ConstNode{val}; }
-    AbstractNode* MakeVar (std::string name)  { return new VariableNode{name}; }
-    AbstractNode* MakeFunc (std::string name) { return new FunctionCallNode{name}; }
-    AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs) {return new OrderNode{lhs, rhs};}
+    AbstractNode* MakeVal (int val)           { return new Node :: ConstNode{val}; }
+    AbstractNode* MakeVar (std::string name)  { return new Node :: VariableNode{name}; }
+    AbstractNode* MakeFunc (std::string name) { return new Node :: FunctionCallNode{name}; }
+    AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs) {return new Node :: OrderNode{lhs, rhs};}
     AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs)
     { 
-        AbstractNode* tmp = new ConditionNode{cond_type};
+        AbstractNode* tmp = new Node :: ConditionNode{cond_type};
 
         if (lhs) lhs->prev_ = tmp;
         if (rhs) rhs->prev_ = tmp;
@@ -153,7 +153,7 @@ namespace AST
     
     AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs)
     {
-        AbstractNode* tmp = new OperationNode{op};
+        AbstractNode* tmp = new Node :: OperationNode{op};
 
         if (lhs)
             lhs->prev_ = tmp;
@@ -167,4 +167,4 @@ namespace AST
         return tmp;
     }
 
-} // End of namespace ParaCL
+} // End of namespace AST

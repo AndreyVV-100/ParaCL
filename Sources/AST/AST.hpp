@@ -6,6 +6,17 @@
 namespace AST
 {
 
+enum class NodeType
+{
+    VARIABLE      = 0,
+    CONST         = 1,
+    OPERATION     = 2,
+    CONDITION     = 3,
+    FUNCTION_CALL = 4,
+    FUNCTION_DECL = 5,  // Now not used
+    ORDER_OP      = 6
+};
+
 enum OpType // ToDo: print name, move this
 {
     ADD = 0,            // +
@@ -72,17 +83,6 @@ struct Tree final
 // ToDo: class or struct, non-private fields? How to get access in child?
 struct AbstractNode
 {
-    enum class NodeType
-    {
-        VARIABLE      = 0,
-        CONST         = 1,
-        OPERATION     = 2,
-        CONDITION     = 3,
-        FUNCTION_CALL = 4,
-        FUNCTION_DECL = 5,  // Now not used
-        ORDER_OP      = 6
-    };
-
     AbstractNode* prev_, 
                 * left_  = nullptr,
                 * right_ = nullptr;
@@ -110,90 +110,6 @@ struct AbstractNode
     // ToDo: SetPrev() ?
 };
 
-struct VariableNode final : public AbstractNode
-{
-    // static Scope - now we havn't class for it // const?
-    std::string name_;
-
-    VariableNode (std::string name, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: VARIABLE),
-        name_ (name)
-    { ; }
-
-    void GraphPrintInfo (std::ostream& output) const override
-    {
-        output << name_;
-        return;
-    }
-};
-
-struct ConstNode final : public AbstractNode
-{
-    int value_; // TODO: rework for all other types
-
-    ConstNode (int value, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: CONST),
-        value_ (value)
-    { ; }
-
-    void GraphPrintInfo (std::ostream& output) const override
-    {
-        output << value_;
-        return;
-    }
-};
-
-struct OperationNode final : public AbstractNode
-{
-    OpType op_type_;
-
-    OperationNode (OpType op_type, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: OPERATION),
-        op_type_ (op_type)
-    { ; }
-
-    void GraphPrintInfo (std::ostream& output) const override
-    {
-        output << static_cast <int> (op_type_);
-        return;
-    }
-};
-
-struct ConditionNode final : public AbstractNode
-{
-    CondType cond_type_;
-
-    ConditionNode (CondType cond_type, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: CONDITION),
-        cond_type_ (cond_type)
-    { ; }
-
-    void GraphPrintInfo (std::ostream& output) const override
-    {
-        output << static_cast <int> (cond_type_);
-        return;
-    }
-};
-
-struct FunctionCallNode final : public AbstractNode
-{
-    // ToDo: parameters list
-    // ToDo: function list
-
-    std::string name_;
-
-    FunctionCallNode (std::string name, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: FUNCTION_CALL),
-        name_ (name)
-    { ; }
-
-    void GraphPrintInfo (std::ostream& output) const override
-    {
-        output << name_;
-        return;
-    }
-};
-
 AbstractNode* MakeVal  (int val);
 AbstractNode* MakeVar  (std::string name);
 AbstractNode* MakeFunc (std::string name);
@@ -201,25 +117,4 @@ AbstractNode* MakeOp   (AbstractNode* lhs, OpType op, AbstractNode* rhs);
 AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs);
 AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs);
 
-struct OrderNode final : public AbstractNode
-{
-    OrderNode (AbstractNode *left, AbstractNode *right, AbstractNode *prev = nullptr):
-        AbstractNode (prev, AbstractNode::NodeType::ORDER_OP) 
-    {
-        left_  = left;
-        right_ = right;
-        
-        if (left_ != nullptr)
-            left_->prev_ = this;
-
-        if (right_ != nullptr)
-            right_->prev_ = this;
-    }
-
-    void GraphPrintInfo (std::ostream& output) const override
-    {
-        output << ";\n";
-        return;
-    }
-};
-} // End of namespace ParaCL
+} // End of namespace AST

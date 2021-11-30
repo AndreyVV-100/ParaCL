@@ -1,4 +1,5 @@
 #include <interpretator.hpp>
+// ToDo: unificate codestyle?
 
 namespace interpretator
 {
@@ -48,7 +49,7 @@ void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope)
 
     while (cur_node != nullptr)
     {
-        if (cur_node->type_ != AST::AbstractNode::NodeType::ORDER_OP)
+        if (cur_node->type_ != AST::NodeType::ORDER_OP)
             throw ERRORS::MISSED_SEMICOLON;
 
         cur_exec_node = cur_node->left_;
@@ -69,9 +70,9 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
 
     switch (node->type_)
     {
-        case AST::AbstractNode::NodeType::VARIABLE:
+        case AST::NodeType::VARIABLE:
         {
-            AST::VariableNode *var_node = static_cast <AST::VariableNode*> (node);
+            Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node);
 
             basic_variable* find_res = scope_->find (var_node->name_);
             
@@ -83,23 +84,23 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
             return var->value;
         }
 
-        case AST::AbstractNode::NodeType::CONST:
+        case AST::NodeType::CONST:
         {
-            AST::ConstNode *const_node = static_cast <AST::ConstNode*> (node);
+            Node::ConstNode *const_node = static_cast <Node::ConstNode*> (node);
 
             return const_node->value_;
         }
 
-        case AST::AbstractNode::NodeType::OPERATION:
+        case AST::NodeType::OPERATION:
             return process_operation_node (scope_, node, global_scope);
         
-        case AST::AbstractNode::NodeType::CONDITION:
+        case AST::NodeType::CONDITION:
             return process_condition_node (scope_, node, global_scope);
 
-        case AST::AbstractNode::NodeType::FUNCTION_CALL:
+        case AST::NodeType::FUNCTION_CALL:
             return process_funccall_node (scope_, node, global_scope);
 
-        case AST::AbstractNode::NodeType::ORDER_OP:
+        case AST::NodeType::ORDER_OP:
             interpretate (scope_, node, global_scope);
             break;
 
@@ -113,11 +114,11 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
 
 int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *global_scope)
 {
-    AST::OperationNode *node = static_cast <AST::OperationNode*> (node_);
+    Node::OperationNode *node = static_cast <Node::OperationNode*> (node_);
 
     int left_val = 0, right_val = 0;
 
-    if ((node->op_type_ / 1000) == 1)
+    if ((node->op_type_ / 1000) == 1) // ToDo: 1000 = const, maybe binary?
     {
         if (node->left_ == nullptr)
             throw ERRORS::INCORRECT_TREE;
@@ -227,10 +228,10 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
 
 int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_scope)
 {
-    if (node_->left_->type_ != AST::AbstractNode::NodeType::VARIABLE)
+    if (node_->left_->type_ != AST::NodeType::VARIABLE)
             throw ERRORS::NOT_A_VARIABLE;
 
-    AST::VariableNode *var_node = static_cast <AST::VariableNode*> (node_->left_);
+    Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_->left_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
@@ -254,10 +255,10 @@ int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_s
 
 int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
-    if (node_->left_->type_ != AST::AbstractNode::NodeType::VARIABLE)
+    if (node_->left_->type_ != AST::NodeType::VARIABLE)
         throw ERRORS::NOT_A_VARIABLE;
 
-    AST::VariableNode *var_node = static_cast <AST::VariableNode*> (node_);
+    Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
@@ -273,10 +274,10 @@ int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_va
 
 int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
-   if (node_->left_->type_ != AST::AbstractNode::NodeType::VARIABLE)
+   if (node_->left_->type_ != AST::NodeType::VARIABLE)
         throw ERRORS::NOT_A_VARIABLE;
 
-    AST::VariableNode *var_node = static_cast <AST::VariableNode*> (node_);
+    Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
@@ -299,7 +300,7 @@ int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *glob
 
     scope *cur_scope = scope_->create_nested_scope();
 
-    AST::ConditionNode *cond_node = static_cast <AST::ConditionNode*> (node_);
+    Node::ConditionNode *cond_node = static_cast <Node::ConditionNode*> (node_);
 
     switch (cond_node->cond_type_)
     {
@@ -330,7 +331,7 @@ int process_funccall_node (scope  *scope_, AST::AbstractNode *node, scope *globa
 {
     int res = 0;
 
-    AST::FunctionCallNode *func_node = static_cast <AST::FunctionCallNode*> (node);
+    Node::FunctionCallNode *func_node = static_cast <Node::FunctionCallNode*> (node);
 
     if (!func_node->name_.compare (std::string {"?"}))
     {

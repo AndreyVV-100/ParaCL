@@ -16,7 +16,7 @@ class Driver final {
 public:
 	Driver(): plex_(new yyFlexLexer), tree{} {}
 
-	parser::token_type yylex(parser::semantic_type *yylval)
+	parser::token_type yylex(parser::semantic_type *yylval) // ToDo: move to driver.cpp?
 	{
 		parser::token_type tt = static_cast<parser::token_type>(plex_->yylex());
 

@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
-#include "AST.hpp"
+#include "Node.hpp"
 
 namespace interpretator
 {
@@ -46,7 +46,7 @@ class scope
 
     public:
 
-    std::vector <scope*> scope_vec;
+    std::vector <scope*> scope_vec; // ToDo: This is a list, it can be easier. Now it's waste of memory
 
     std::unordered_map <std::string, basic_variable*> objects;
 
