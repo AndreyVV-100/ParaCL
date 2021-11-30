@@ -20,33 +20,50 @@
 
 namespace yy {
 
-class Driver {
-  FlexLexer *plex_;
-  ParaCL::Tree tree;
+class Driver final {
+	FlexLexer *plex_;
+	ParaCL::Tree tree;
 
 public:
-  Driver(FlexLexer *plex) : plex_(plex), tree{} {}
+	Driver(): plex_(new yyFlexLexer), tree{} {}
 
-  parser::token_type yylex(parser::semantic_type *yylval) {
-    parser::token_type tt = static_cast<parser::token_type>(plex_->yylex());
-    if (tt == yy::parser::token_type::NUMBER)
-      yylval->as<int>() = std::stoi(plex_->YYText());
-    return tt;
-  }
+	parser::token_type yylex(parser::semantic_type *yylval)
+	{
+		parser::token_type tt = static_cast<parser::token_type>(plex_->yylex());
 
-  bool parse() {
-    parser parser(this);
-    bool res = parser.parse();
-    return !res;
-  }
+		switch (tt)
+		{
+			case yy::parser::token_type::NUMBER:
+			case yy::parser::token_type::ZERO:			
+				yylval->build<int>() = std::stoi(plex_->YYText());
+				break;
+			case yy::parser::token_type::WORD:
+			case yy::parser::token_type::PRINT:
+			case yy::parser::token_type::SCAN:
+			case yy::parser::token_type::FUNC:
+				yylval->build<std::string>() = plex_->YYText();
+				break;
+			case yy::parser::token_type::ERR:
+				throw std::string{"Parsing error"};
+				break;
+		}
 
-  void insert(ParaCL::AbstractNode* other) {
-      tree.top_ = other;
-  }
+		return tt;
+	}
 
-  void printout() const {
-      tree.PrintTree ("bebra.dot");
-  }
+	bool parse()
+	{
+		parser parser(this);
+		bool res = parser.parse();
+		return !res;
+	}
+
+	void insert(ParaCL::AbstractNode* other) { tree.top_ = other; }
+	void interpretate ();
+
+	void printout() const { tree.PrintTree ("graph.dot"); }
+
+	~Driver() { delete plex_; }
 };
 
 } // namespace yy

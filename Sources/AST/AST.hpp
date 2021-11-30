@@ -43,6 +43,12 @@ enum class OpType // ToDo: print name, move this
     POST_DEC = 27  // x--
 };
 
+enum class CondType
+{
+    IF = 0,
+    WHILE = 1
+};
+
 struct AbstractNode;
 
 struct Tree final
@@ -102,9 +108,6 @@ struct AbstractNode
     // ToDo: SetPrev() ?
 };
 
-AbstractNode* MakeVal (int val);
-AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs);
-
 struct VariableNode final : public AbstractNode
 {
     // static Scope - now we havn't class for it // const?
@@ -156,12 +159,6 @@ struct OperationNode final : public AbstractNode
 
 struct ConditionNode final : public AbstractNode
 {
-    enum class CondType
-    {
-        IF = 0,
-        WHILE = 1
-    };
-
     CondType cond_type_;
 
     ConditionNode (CondType cond_type, AbstractNode* prev = nullptr):
@@ -194,5 +191,9 @@ struct FunctionCallNode final : public AbstractNode
         return;
     }
 };
-
+    AbstractNode* MakeVal  (int val);
+    AbstractNode* MakeVar  (std::string name);
+    AbstractNode* MakeFunc (std::string name);
+    AbstractNode* MakeOp   (AbstractNode* lhs, OpType op, AbstractNode* rhs);
+    AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs);
 } // End of namespace ParaCL
