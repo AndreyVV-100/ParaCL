@@ -72,7 +72,7 @@ class scope
     basic_variable* find (std::string name) const;
 };
 
-void start_interpretate (AST::Tree &tree);
+void start_interpretate (const AST::Tree &tree);
 
 void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope);
 
