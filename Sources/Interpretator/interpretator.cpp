@@ -10,6 +10,8 @@ scope * scope::create_nested_scope ()
 
     scope_vec.push_back (new_scope);
 
+    new_scope->upper_scope = this;
+
     return new_scope;
 };
 
@@ -24,18 +26,24 @@ basic_variable* scope::find (std::string name) const
 
     else if (upper_scope != nullptr)
         res = upper_scope->find (name);
-
+    
     return res;
 }
 
 //other funcs
 
-void start_interpretate (AST::AbstractNode *tree_top)
+void start_interpretate (const AST::Tree &tree)
 {
     scope *global_scope = new scope;
-    scope *cur_scope    = global_scope;
 
-    AST::AbstractNode *cur_node = tree_top;
+    interpretate (global_scope, tree.top_, global_scope);
+
+    delete global_scope;
+}
+
+void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope)
+{
+    AST::AbstractNode *cur_node = node;
     AST::AbstractNode *cur_exec_node = nullptr;
 
     while (cur_node != nullptr)
@@ -47,13 +55,11 @@ void start_interpretate (AST::AbstractNode *tree_top)
 
         if (cur_exec_node != nullptr)
         {
-            process_node (cur_scope, cur_exec_node, global_scope);
+            process_node (scope_, cur_exec_node, global_scope);
         }
 
         cur_node = cur_node->right_;
     }
-
-    delete global_scope;
 }
 
 int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
@@ -94,7 +100,7 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
             return process_funccall_node (scope_, node, global_scope);
 
         case AST::AbstractNode::NodeType::ORDER_OP:
-            start_interpretate (node);
+            interpretate (scope_, node, global_scope);
             break;
 
         default:

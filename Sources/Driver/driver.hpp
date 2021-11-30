@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <numeric>
-#include <fstream>
 
 #include "parser.tab.hh"
 #include <FlexLexer.h>
@@ -50,7 +49,7 @@ public:
 	void insert(AST::AbstractNode* other) { tree.top_ = other; }
 	void interpretate ()
     {
-        interpretator::start_interpretate (tree.top_);
+        interpretator::start_interpretate (tree);
     }
 
 	void printout() const { tree.PrintTree ("graph.dot"); }
