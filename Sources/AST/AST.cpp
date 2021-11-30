@@ -36,6 +36,8 @@ namespace ParaCL
 
     void Tree::PrintTree (const std::string& filename) const
     {
+        if (!top_) { return; }
+
         std::fstream output;
         output.open (filename, std::ios::out);
 
@@ -120,7 +122,7 @@ namespace ParaCL
         PrintTypeName(output);
         output << " | ";
         GraphPrintInfo(output); 
-        output <<"\"\n"
+        output << "\"\n"
                << "shape = \"record\"\n"
                << "];\n";
 
@@ -132,12 +134,32 @@ namespace ParaCL
         return;
     }
     
-    AbstractNode* MakeVal (int val) { return new ConstNode{val}; }
+    AbstractNode* MakeVal (int val)           { return new ConstNode{val}; }
+    AbstractNode* MakeVar (std::string name)  { return new VariableNode{name}; }
+    AbstractNode* MakeFunc (std::string name) { return new FunctionCallNode{name}; }
+    AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs)
+    { 
+        AbstractNode* tmp = new ConditionNode{cond_type};
+
+        if (lhs) lhs->prev_ = tmp;
+        if (rhs) rhs->prev_ = tmp;
+
+        tmp->left_ = lhs;
+        tmp->right_ = rhs;
+
+        return tmp;
+    }
+    
     AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs)
     {
         AbstractNode* tmp = new OperationNode{op};
+
+        if (lhs) lhs->prev_ = tmp;
+        if (rhs) rhs->prev_ = tmp;
+
         tmp->left_ = lhs;
         tmp->right_ = rhs;
+
         return tmp;
     }
 

@@ -19,7 +19,7 @@ add_flex_bison_dependency(scanner parser)
 
 add_executable(${PROJECT_NAME} 
   ${CMAKE_CURRENT_SOURCE_DIR}/Sources/AST/AST.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Driver/driver.cc  
+  ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Driver/driver.cpp 
   ${BISON_parser_OUTPUTS}
   ${FLEX_scanner_OUTPUTS}
 )
