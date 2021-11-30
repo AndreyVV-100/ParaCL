@@ -199,14 +199,21 @@ AbstractNode* MakeVar  (std::string name);
 AbstractNode* MakeFunc (std::string name);
 AbstractNode* MakeOp   (AbstractNode* lhs, OpType op, AbstractNode* rhs);
 AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs);
+AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs);
 
 struct OrderNode final : public AbstractNode
 {
-    OrderNode (AbstractNode *left, AbstractNode *right, AbstractNode *prev):
+    OrderNode (AbstractNode *left, AbstractNode *right, AbstractNode *prev = nullptr):
         AbstractNode (prev, AbstractNode::NodeType::ORDER_OP) 
     {
-        AbstractNode::left_  = left;
-        AbstractNode::right_ = right;
+        left_  = left;
+        right_ = right;
+        
+        if (left_ != nullptr)
+            left_->prev_ = this;
+
+        if (right_ != nullptr)
+            right_->prev_ = this;
     }
 
     void GraphPrintInfo (std::ostream& output) const override

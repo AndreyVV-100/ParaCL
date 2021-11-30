@@ -137,6 +137,7 @@ namespace AST
     AbstractNode* MakeVal (int val)           { return new ConstNode{val}; }
     AbstractNode* MakeVar (std::string name)  { return new VariableNode{name}; }
     AbstractNode* MakeFunc (std::string name) { return new FunctionCallNode{name}; }
+    AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs) {return new OrderNode{lhs, rhs};}
     AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs)
     { 
         AbstractNode* tmp = new ConditionNode{cond_type};

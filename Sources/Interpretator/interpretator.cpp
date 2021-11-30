@@ -30,12 +30,12 @@ basic_variable* scope::find (std::string name) const
 
 //other funcs
 
-void start_interpretate (AST::Tree &tree)
+void start_interpretate (AST::AbstractNode *tree_top)
 {
     scope *global_scope = new scope;
     scope *cur_scope    = global_scope;
 
-    AST::AbstractNode *cur_node = tree.top_;
+    AST::AbstractNode *cur_node = tree_top;
     AST::AbstractNode *cur_exec_node = nullptr;
 
     while (cur_node != nullptr)
@@ -93,7 +93,12 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
         case AST::AbstractNode::NodeType::FUNCTION_CALL:
             return process_funccall_node (scope_, node, global_scope);
 
+        case AST::AbstractNode::NodeType::ORDER_OP:
+            start_interpretate (node);
+            break;
+
         default:
+            // std::cout << static_cast <int> (node->type_)<< std::endl;
             throw ERRORS::UNKNOWN_NODETYPE;
     }
 
@@ -118,8 +123,11 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
             throw ERRORS::INCORRECT_TREE;
     }
 
-    left_val  = process_node (scope_, node_->left_, global_scope);
-    right_val = process_node (scope_, node->right_, global_scope);
+    if (node->op_type_ != AST::OpType::ASS)
+    {
+        left_val  = process_node (scope_, node_->left_, global_scope);
+        right_val = process_node (scope_, node->right_, global_scope);
+    }
 
     switch (node->op_type_)
     {
@@ -216,7 +224,7 @@ int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_s
     if (node_->left_->type_ != AST::AbstractNode::NodeType::VARIABLE)
             throw ERRORS::NOT_A_VARIABLE;
 
-    AST::VariableNode *var_node = static_cast <AST::VariableNode*> (node_);
+    AST::VariableNode *var_node = static_cast <AST::VariableNode*> (node_->left_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 

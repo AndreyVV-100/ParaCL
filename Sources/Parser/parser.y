@@ -26,8 +26,8 @@ namespace yy {
 parser::token_type yylex(parser::semantic_type* yylval,                         
                                                  Driver* driver);
 
-ParaCL::AbstractNode* BindNodes(ParaCL::AbstractNode* lhs, 
-                                         ParaCL::AbstractNode* rhs);
+AST::AbstractNode* BindNodes(AST::AbstractNode* lhs, 
+                                         AST::AbstractNode* rhs);
 }
 }
 
@@ -57,28 +57,26 @@ ParaCL::AbstractNode* BindNodes(ParaCL::AbstractNode* lhs,
 ;
 
 %nterm 
-    <ParaCL::AbstractNode*> STMS
-    <ParaCL::AbstractNode*> STM
-    <ParaCL::AbstractNode*> ASSIGN
-    <ParaCL::AbstractNode*> EXPR
-    <ParaCL::AbstractNode*> COND
-    <ParaCL::AbstractNode*> MATH_A
-    <ParaCL::AbstractNode*> MATH_Aw
-    <ParaCL::AbstractNode*> MATH_B
-    <ParaCL::AbstractNode*> MATH_Bw
-    <ParaCL::AbstractNode*> MATH_E
-    <ParaCL::AbstractNode*> MATH_Ew
-    <ParaCL::AbstractNode*> MATH_T
-    <ParaCL::AbstractNode*> MATH_Tw
-    <ParaCL::AbstractNode*> MATH_P
-    <ParaCL::AbstractNode*> SCOPE
-    <ParaCL::AbstractNode*> VAL
-    <ParaCL::AbstractNode*> VAR
-    <ParaCL::AbstractNode*> CALLFUNC
+    <AST::AbstractNode*> STMS
+    <AST::AbstractNode*> STM
+    <AST::AbstractNode*> ASSIGN
+    <AST::AbstractNode*> EXPR
+    <AST::AbstractNode*> COND
+    <AST::AbstractNode*> MATH_A
+    <AST::AbstractNode*> MATH_Aw
+    <AST::AbstractNode*> MATH_B
+    <AST::AbstractNode*> MATH_Bw
+    <AST::AbstractNode*> MATH_E
+    <AST::AbstractNode*> MATH_Ew
+    <AST::AbstractNode*> MATH_T
+    <AST::AbstractNode*> MATH_Tw
+    <AST::AbstractNode*> MATH_P
+    <AST::AbstractNode*> SCOPE
+    <AST::AbstractNode*> VAL
+    <AST::AbstractNode*> VAR
+    <AST::AbstractNode*> CALLFUNC
 ;
 
-%token <int> NUMBER
-%nterm <AST::AbstractNode*> expr
 %left '+' '-'
 
 %start program
@@ -87,8 +85,8 @@ ParaCL::AbstractNode* BindNodes(ParaCL::AbstractNode* lhs,
 
 program: STMS                                    { driver->insert($1); }
 
-STMS: STM                                        { $$ = ParaCL::MakeOp($1, ParaCL::OpType::ORD, nullptr); }
-    | STM STMS                                   { $$ = ParaCL::MakeOp($1, ParaCL::OpType::ORD, $2); }
+STMS: STM                                        { $$ = AST::MakeORD($1, nullptr); }
+    | STM STMS                                   { $$ = AST::MakeORD($1, $2); }
 ;
 
 STM: ASSIGN                                      { $$ = $1; }
@@ -100,7 +98,7 @@ STM: ASSIGN                                      { $$ = $1; }
    | SCOLON                                      { $$ = nullptr; }
 ;
 
-ASSIGN: VAR ASS EXPR SCOLON                      { $$ = ParaCL::MakeOp($1, ParaCL::OpType::ASS, $3); }
+ASSIGN: VAR ASS EXPR SCOLON                      { $$ = AST::MakeOp($1, AST::OpType::ASS, $3); }
 ;
 
 EXPR: MATH_A                                     { $$ = $1; }
@@ -109,57 +107,57 @@ EXPR: MATH_A                                     { $$ = $1; }
 MATH_A: MATH_B MATH_Aw                           { $$ = BindNodes ($1, $2); }
 ;
                                                 //TODO copypaste?
-MATH_Aw: EQU MATH_B    MATH_Aw                   { $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::EQU, $2);  $$ = BindNodes ($$, $3); }
+MATH_Aw: EQU MATH_B    MATH_Aw                   { $$ = AST::MakeOp(nullptr, AST::OpType::EQU, $2);  $$ = BindNodes ($$, $3); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_B: MATH_E MATH_Bw                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Bw: STL MATH_E MATH_Bw                      { $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::STL, $2);  $$ = BindNodes ($$, $3); }
-       | STG MATH_E MATH_Bw                      { $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::STG, $2);  $$ = BindNodes ($$, $3); }
+MATH_Bw: STL MATH_E MATH_Bw                      { $$ = AST::MakeOp(nullptr, AST::OpType::STL, $2);  $$ = BindNodes ($$, $3); }
+       | STG MATH_E MATH_Bw                      { $$ = AST::MakeOp(nullptr, AST::OpType::STG, $2);  $$ = BindNodes ($$, $3); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_E: MATH_T MATH_Ew                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Ew: ADD MATH_T MATH_Ew                      { $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::ADD, $2);  $$ = BindNodes ($$, $3); }
-       | SUB MATH_T    MATH_Ew                   { $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::SUB, $2);  $$ = BindNodes ($$, $3); }
+MATH_Ew: ADD MATH_T MATH_Ew                      { $$ = AST::MakeOp(nullptr, AST::OpType::ADD, $2);  $$ = BindNodes ($$, $3); }
+       | SUB MATH_T    MATH_Ew                   { $$ = AST::MakeOp(nullptr, AST::OpType::SUB, $2);  $$ = BindNodes ($$, $3); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_T: MATH_P MATH_Tw                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Tw: MUL MATH_P MATH_Tw                      { $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::MUL, $2);  $$ = BindNodes ($$, $3); }
-       | DIV MATH_P    MATH_Tw                   { $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::DIV, $2);  $$ = BindNodes ($$, $3); }
+MATH_Tw: MUL MATH_P MATH_Tw                      { $$ = AST::MakeOp(nullptr, AST::OpType::MUL, $2);  $$ = BindNodes ($$, $3); }
+       | DIV MATH_P    MATH_Tw                   { $$ = AST::MakeOp(nullptr, AST::OpType::DIV, $2);  $$ = BindNodes ($$, $3); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_P: OPEXPRBRACE EXPR CLEXPRBRACE             { $$ = $2; }
        | VAL                                     { $$ = $1; }
       | VAR                                      { $$ = $1; }
-      | SCAN                                     { $$ = ParaCL::MakeFunc($1); }
+      | SCAN                                     { $$ = AST::MakeFunc($1); }
 ;
 
-VAL: SUB NUMBER                                  { $$ = ParaCL::MakeOp(ParaCL::MakeVal(0), ParaCL::OpType::SUB, ParaCL::MakeVal($2)); }
-   | ADD NUMBER                                  { $$ = ParaCL::MakeOp(ParaCL::MakeVal(0), ParaCL::OpType::ADD, ParaCL::MakeVal($2)); }
-   | NUMBER                                      { $$ = ParaCL::MakeVal($1); }
-   | ZERO                                        { $$ = ParaCL::MakeVal($1); }
+VAL: SUB NUMBER                                  { $$ = AST::MakeOp(AST::MakeVal(0), AST::OpType::SUB, AST::MakeVal($2)); }
+   | ADD NUMBER                                  { $$ = AST::MakeOp(AST::MakeVal(0), AST::OpType::ADD, AST::MakeVal($2)); }
+   | NUMBER                                      { $$ = AST::MakeVal($1); }
+   | ZERO                                        { $$ = AST::MakeVal($1); }
 ;
 
-VAR: WORD                                        { $$ = ParaCL::MakeVar($1); }
+VAR: WORD                                        { $$ = AST::MakeVar($1); }
 
-CALLFUNC: FUNC                                   { $$ = ParaCL::MakeFunc($1); }
-        | PRINT                                  { $$ = ParaCL::MakeFunc($1); }
+CALLFUNC: FUNC                                   { $$ = AST::MakeFunc($1); }
+        | PRINT                                  { $$ = AST::MakeFunc($1); }
 ;
 
 SCOPE: OPSCOPEBRACE STMS CLSCOPEBRACE            { $$ = $2; }
 ;
 
-COND: IF     OPEXPRBRACE EXPR CLEXPRBRACE SCOPE  { $$ = ParaCL::MakeCond($3, ParaCL::CondType::IF,    $5); }
-    | WHILE OPEXPRBRACE EXPR CLEXPRBRACE SCOPE   { $$ = ParaCL::MakeCond($3, ParaCL::CondType::WHILE, $5); }
+COND: IF     OPEXPRBRACE EXPR CLEXPRBRACE SCOPE  { $$ = AST::MakeCond($3, AST::CondType::IF,    $5); }
+    | WHILE OPEXPRBRACE EXPR CLEXPRBRACE SCOPE   { $$ = AST::MakeCond($3, AST::CondType::WHILE, $5); }
 
 %%
 
@@ -172,11 +170,11 @@ parser::token_type yylex(parser::semantic_type* yylval, Driver* driver)
 
 void parser::error(const std::string&) {}
 
-ParaCL::AbstractNode* BindNodes(ParaCL::AbstractNode* lhs, ParaCL::AbstractNode* rhs)
+AST::AbstractNode* BindNodes(AST::AbstractNode* lhs, AST::AbstractNode* rhs)
 {
     if (rhs)
     {
-        ParaCL::AbstractNode* tmp = rhs;
+        AST::AbstractNode* tmp = rhs;
 
         while (tmp->left_) tmp = tmp->left_;
 
