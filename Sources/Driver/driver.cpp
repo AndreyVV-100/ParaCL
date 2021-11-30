@@ -1,11 +1,20 @@
 #include "driver.hpp"
+#include <fstream>
 
 int yyFlexLexer::yywrap() { return 1; }
 
-int main() 
+int main(int argc, char** argv) 
 {
+    // if (argc != 2)
+    // {
+    //     std::cout << "Not enough arguments" << std::endl;
+    //     return 0;
+    // }
+
+    // std::fstream code_file(argv[1]);
+
     yy::Driver driver{};
-    
+
     try
     {
         driver.parse();
