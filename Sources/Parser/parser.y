@@ -132,15 +132,9 @@ MATH_Ew: ADD MATH_T MATH_Ew						{ $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::
 MATH_T: MATH_P MATH_Tw							{ $$ = BindNodes ($1, $2); }
 ;
 
-<<<<<<< HEAD
 MATH_Tw: MUL MATH_P MATH_Tw						{ $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::MUL, $2);  $$ = BindNodes ($$, $3); }
 	   | DIV MATH_P	MATH_Tw						{ $$ = ParaCL::MakeOp(nullptr, ParaCL::OpType::DIV, $2);  $$ = BindNodes ($$, $3); }
 	   | %empty									{ $$ = nullptr; }
-=======
-expr: NUMBER                { $$ = AST::MakeVal($1); }
-    | expr PLUS NUMBER      { $$ = AST::MakeOp($1, AST::OpType::ADD, AST::MakeVal($3)); }
-    | expr MINUS NUMBER     { $$ = AST::MakeOp($1, AST::OpType::SUB, AST::MakeVal($3)); }
->>>>>>> dev
 ;
 
 MATH_P: OPEXPRBRACE EXPR CLEXPRBRACE 			{ $$ = $2; }

@@ -289,13 +289,13 @@ int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *glob
 
     switch (cond_node->cond_type_)
     {
-        case AST::ConditionNode::CondType::IF:
+        case AST::CondType::IF:
             if (process_node (cur_scope, node_->left_, global_scope))
                 process_node (cur_scope, node_->right_, global_scope);
 
             break;
 
-        case AST::ConditionNode::CondType::WHILE:
+        case AST::CondType::WHILE:
             while (process_node (cur_scope, node_->left_, global_scope))
                 process_node (cur_scope, node_->right_, global_scope);
 
