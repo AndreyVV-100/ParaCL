@@ -1,29 +1,39 @@
 #include "driver.hpp"
+#include <fstream>
+#include <string>
 
-int yyFlexLexer::yywrap() { return 1; }
-
-int main() 
+int main(int argc, char** argv) 
 {
-    yy::Driver driver{};
-    
-    try
+    if (argc != 2)
     {
-        driver.parse();
-    }  
-    catch(std::string err)
-    {
-        std::cerr << err << std::endl;
+        std::cout << "Pass the filename" << std::endl;
+        return 1;
     }
+
+    std::fstream program {argv[1], std::ios::in};
+
+    if (!program.is_open())
+    {
+        std::cout << "Couldn't open file" << std::endl;
+        return 1;
+    }
+
+    std::streambuf* cin_buff = std::cin.rdbuf();
+    std::cin.rdbuf (program.rdbuf());
+
+    yy::Driver driver{};
+
+    try { driver.parse(); }  
+    catch(std::string err) { std::cerr << err << std::endl; }
     
     driver.printout();
+    std::cin.rdbuf (cin_buff);
 
-    try
-    {
-        driver.interpretate();
-    }
-    catch(interpretator::ERRORS e)
-    {
-        std::cerr << static_cast <int> (e) << '\n';
+    try { driver.interpretate(); }
+    catch(interpretator::ERRORS e) 
+    { 
+        std::cerr << "Interpretator error: " 
+                  << static_cast <int> (e) << '\n'; 
     }
 
     return 0;

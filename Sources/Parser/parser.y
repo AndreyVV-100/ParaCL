@@ -40,11 +40,11 @@ AST::AbstractNode* BindNodes(AST::AbstractNode* lhs,
     MUL             "*"
     DIV             "/"
     ASS             "="
-    SCOLON       ";"
-    OPEXPRBRACE  "("
-    CLEXPRBRACE  ")"
-      OPSCOPEBRACE "{"
-    CLSCOPEBRACE "}"
+    SCOLON          ";"
+    OPEXPRBRACE     "("
+    CLEXPRBRACE     ")"
+    OPSCOPEBRACE    "{"
+    CLSCOPEBRACE    "}"
     WHILE         "while"
     IF              "if"
     ERR
@@ -136,7 +136,7 @@ MATH_Tw: MUL MATH_P MATH_Tw                      { $$ = AST::MakeOp(nullptr, AST
 ;
 
 MATH_P: OPEXPRBRACE EXPR CLEXPRBRACE             { $$ = $2; }
-       | VAL                                     { $$ = $1; }
+      | VAL                                      { $$ = $1; }
       | VAR                                      { $$ = $1; }
       | SCAN                                     { $$ = AST::MakeFunc($1); }
 ;

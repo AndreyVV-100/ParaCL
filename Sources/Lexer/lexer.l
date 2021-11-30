@@ -1,9 +1,8 @@
 %option c++
 
-%{
-
+%{ 
 #include "parser.tab.hh"
-
+int yyFlexLexer::yywrap() { return 1; }
 %}
 
 WS      		[ \t\n\v]+

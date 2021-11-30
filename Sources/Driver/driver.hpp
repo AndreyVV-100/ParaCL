@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <numeric>
+#include <fstream>
 
 #include "parser.tab.hh"
 #include <FlexLexer.h>
@@ -40,11 +41,10 @@ public:
 		return tt;
 	}
 
-	bool parse()
+	void parse()
 	{
 		parser parser(this);
-		bool res = parser.parse();
-		return !res;
+		parser.parse();
 	}
 
 	void insert(AST::AbstractNode* other) { tree.top_ = other; }
