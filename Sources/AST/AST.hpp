@@ -89,11 +89,14 @@ struct AbstractNode
     
     NodeType type_; // const?
 
+    int lineno_;
+
     public:
 
-    AbstractNode (AbstractNode* prev, NodeType type):
+    AbstractNode (AbstractNode* prev, NodeType type, int lineno):
         prev_ (prev),
-        type_ (type)
+        type_ (type),
+        lineno_ (lineno)
     { ; }
     virtual ~AbstractNode() = default;
 
@@ -110,11 +113,11 @@ struct AbstractNode
     // ToDo: SetPrev() ?
 };
 
-AbstractNode* MakeVal  (int val);
-AbstractNode* MakeVar  (std::string name);
-AbstractNode* MakeFunc (std::string name);
-AbstractNode* MakeOp   (AbstractNode* lhs, OpType op, AbstractNode* rhs);
-AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs);
-AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs);
+AbstractNode* MakeVal  (int val, int lineno);
+AbstractNode* MakeVar  (std::string name, int lineno);
+AbstractNode* MakeFunc (std::string name, int lineno);
+AbstractNode* MakeOp   (AbstractNode* lhs, OpType op, AbstractNode* rhs, int lineno);
+AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs, int lineno);
+AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs, int lineno);
 
 } // End of namespace AST

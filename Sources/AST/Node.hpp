@@ -10,8 +10,8 @@ struct VariableNode final : public AbstractNode
     // static Scope - now we havn't class for it // const?
     std::string name_;
 
-    VariableNode (std::string name, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: VARIABLE),
+    VariableNode (std::string name, int lineno, AbstractNode* prev = nullptr):
+        AbstractNode (prev, NodeType :: VARIABLE, lineno),
         name_ (name)
     { ; }
 
@@ -26,8 +26,8 @@ struct ConstNode final : public AbstractNode
 {
     int value_; // TODO: rework for all other types
 
-    ConstNode (int value, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: CONST),
+    ConstNode (int value, int lineno, AbstractNode* prev = nullptr):
+        AbstractNode (prev, NodeType :: CONST, lineno),
         value_ (value)
     { ; }
 
@@ -42,8 +42,8 @@ struct OperationNode final : public AbstractNode
 {
     OpType op_type_;
 
-    OperationNode (OpType op_type, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: OPERATION),
+    OperationNode (OpType op_type, int lineno, AbstractNode* prev = nullptr):
+        AbstractNode (prev, NodeType :: OPERATION, lineno),
         op_type_ (op_type)
     { ; }
 
@@ -58,8 +58,8 @@ struct ConditionNode final : public AbstractNode
 {
     CondType cond_type_;
 
-    ConditionNode (CondType cond_type, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: CONDITION),
+    ConditionNode (CondType cond_type, int lineno, AbstractNode* prev = nullptr):
+        AbstractNode (prev, NodeType :: CONDITION, lineno),
         cond_type_ (cond_type)
     { ; }
 
@@ -77,8 +77,8 @@ struct FunctionCallNode final : public AbstractNode
 
     std::string name_;
 
-    FunctionCallNode (std::string name, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: FUNCTION_CALL),
+    FunctionCallNode (std::string name, int lineno, AbstractNode* prev = nullptr):
+        AbstractNode (prev, NodeType :: FUNCTION_CALL, lineno),
         name_ (name)
     { ; }
 
@@ -91,8 +91,8 @@ struct FunctionCallNode final : public AbstractNode
 
 struct OrderNode final : public AbstractNode
 {
-    OrderNode (AbstractNode *left, AbstractNode *right, AbstractNode *prev = nullptr):
-        AbstractNode (prev, NodeType::ORDER_OP) 
+    OrderNode (AbstractNode *left, AbstractNode *right, int lineno, AbstractNode *prev = nullptr):
+        AbstractNode (prev, NodeType::ORDER_OP, lineno) 
     {
         left_  = left;
         right_ = right;

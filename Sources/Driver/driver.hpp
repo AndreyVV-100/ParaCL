@@ -66,6 +66,8 @@ public:
 		);
 	}
 
+	int getlineno() { return plex_->lineno(); }
+
 	void interpretate ()
     {
         interpretator::start_interpretate (tree);

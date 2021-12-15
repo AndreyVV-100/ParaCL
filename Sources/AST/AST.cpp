@@ -134,34 +134,32 @@ namespace AST
         return;
     }
     
-    AbstractNode* MakeVal (int val)           { return new Node :: ConstNode{val}; }
-    AbstractNode* MakeVar (std::string name)  { return new Node :: VariableNode{name}; }
-    AbstractNode* MakeFunc (std::string name) { return new Node :: FunctionCallNode{name}; }
-    AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs) {return new Node :: OrderNode{lhs, rhs};}
-    AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs)
-    { 
-        AbstractNode* tmp = new Node :: ConditionNode{cond_type};
+    AbstractNode* MakeVal  (int val, int lineno)          { return new Node :: ConstNode{val, lineno}; }
+    AbstractNode* MakeVar  (std::string name, int lineno) { return new Node :: VariableNode{name, lineno}; }
+    AbstractNode* MakeFunc (std::string name, int lineno) { return new Node :: FunctionCallNode{name, lineno}; }
+    AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs, int lineno) { return new Node :: OrderNode{lhs, rhs, lineno}; }
+
+    AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs, int lineno)
+    {
+        AbstractNode* tmp = new Node :: ConditionNode{cond_type, lineno};
 
         if (lhs) lhs->prev_ = tmp;
         if (rhs) rhs->prev_ = tmp;
 
-        tmp->left_ = lhs;
+        tmp->left_  = lhs;
         tmp->right_ = rhs;
 
         return tmp;
     }
     
-    AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs)
+    AbstractNode* MakeOp (AbstractNode* lhs, OpType op, AbstractNode* rhs, int lineno)
     {
-        AbstractNode* tmp = new Node :: OperationNode{op};
+        AbstractNode* tmp = new Node :: OperationNode{op, lineno};
 
-        if (lhs)
-            lhs->prev_ = tmp;
+        if (lhs) lhs->prev_ = tmp;
+        if (rhs) rhs->prev_ = tmp;
 
-        if (rhs)
-            rhs->prev_ = tmp;
-
-        tmp->left_ = lhs;
+        tmp->left_  = lhs;
         tmp->right_ = rhs;
 
         return tmp;
