@@ -12,7 +12,7 @@ namespace yy {
 class Driver final {
 	FlexLexer *plex_;
 	AST::Tree tree;
-
+	std::vector<std::string> errors;
 public:
 	Driver(): plex_(new yyFlexLexer), tree{} {}
 
@@ -32,9 +32,8 @@ public:
 			case yy::parser::token_type::FUNC:
 				yylval->build<std::string>() = plex_->YYText();
 				break;
-			case yy::parser::token_type::ERR:
-				throw std::string{"Parsing error"};
-				break;
+			case yy::parser::token_type::LEXERR:
+				push_error(std::string("unrecognized character: "));
 		}
 
 		return tt;
@@ -44,9 +43,29 @@ public:
 	{
 		parser parser(this);
 		parser.parse();
+
+		if (errors.size()) 
+			throw errors;
 	}
 
 	void insert(AST::AbstractNode* other) { tree.top_ = other; }
+
+	void push_error (std::string error)
+	{
+		errors.push_back (
+			   std::string("line: ") + std::to_string(plex_->lineno()) +
+			   std::string(" | error: ") + error
+	    );
+	}
+
+	void push_err_text(std::string error)
+	{
+		push_error (
+			error + std::string("\"") +
+			std::string(plex_->YYText()) + "\""
+		);
+	}
+
 	void interpretate ()
     {
         interpretator::start_interpretate (tree);

@@ -1,5 +1,5 @@
 %option c++
-
+%option yylineno
 %{ 
 #include "parser.tab.hh"
 int yyFlexLexer::yywrap() { return 1; }
@@ -14,7 +14,11 @@ WORD  			[_a-zA-Z]+{DIGIT}*
 %%
 
 {WS}              /* skip blanks and tabs */
+"||"              { return yy::parser::token_type::LOR;          }
+"&&"              { return yy::parser::token_type::LAND;         }
 "=="              { return yy::parser::token_type::EQU;          }
+"<="              { return yy::parser::token_type::EQL;          }
+">="              { return yy::parser::token_type::EQG;          }
 "<"               { return yy::parser::token_type::STL;          }
 ">"               { return yy::parser::token_type::STG;          }
 "+"               { return yy::parser::token_type::ADD;          }
@@ -34,7 +38,9 @@ WORD  			[_a-zA-Z]+{DIGIT}*
 "if"	    	  { return yy::parser::token_type::IF;           }
 {WORD}            { return yy::parser::token_type::WORD;         }
 {DIGIT1}{DIGIT}*  { return yy::parser::token_type::NUMBER;       }
-.			      { return yy::parser::token_type::ERR;          }
+{DIGIT}+{WORD}    { return yy::parser::token_type::LEXERR;       }
+"0"+{DIGIT}       { return yy::parser::token_type::LEXERR;       }
+.			      { return yy::parser::token_type::LEXERR;       }
 
 %%
 
