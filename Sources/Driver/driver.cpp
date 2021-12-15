@@ -38,10 +38,9 @@ int main(int argc, char** argv)
    driver.printout();
 
     try { driver.interpretate(); }
-    catch(interpretator::ERRORS e) 
+    catch(std::string error) 
     { 
-        std::cerr << "Interpretator error: " 
-                  << static_cast <int> (e) << '\n'; 
+        std::cerr << "Interpretator error: " << error << '\n'; 
     }
 
     return 0;

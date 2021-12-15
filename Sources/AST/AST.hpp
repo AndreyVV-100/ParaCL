@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <string>
 
 namespace AST
 {
@@ -120,4 +121,5 @@ AbstractNode* MakeOp   (AbstractNode* lhs, OpType op, AbstractNode* rhs, int lin
 AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs, int lineno);
 AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs, int lineno);
 
+std::string get_code_row (int number);
 } // End of namespace AST

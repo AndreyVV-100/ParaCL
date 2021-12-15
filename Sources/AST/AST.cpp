@@ -165,4 +165,11 @@ namespace AST
         return tmp;
     }
 
+
+    std::string get_code_row (int number)
+    {
+        std::string res = {"some string here;"};
+
+        return res;
+    }
 } // End of namespace AST
