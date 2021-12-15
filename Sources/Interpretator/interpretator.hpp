@@ -72,6 +72,8 @@ class scope
     basic_variable* find (std::string name) const;
 };
 
+std::string get_error_message (ERRORS error_code, std::string &code_row, int row_number);
+
 void start_interpretate (const AST::Tree &tree);
 
 void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope);

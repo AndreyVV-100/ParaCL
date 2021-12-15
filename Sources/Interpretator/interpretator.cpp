@@ -31,13 +31,104 @@ basic_variable* scope::find (std::string name) const
     return res;
 }
 
+//error processing
+
+std::string get_error_message (ERRORS error_code, AST::AbstractNode *node)
+{
+    int row_number = node->lineno_;
+
+    std::string code_row = AST::get_code_row (row_number);
+
+    std::string res = {};
+
+    switch (error_code)
+    {
+        case ERRORS::MISSED_SEMICOLON:
+        {
+            res = std::string {"Missed semicolon\n"};
+            break;
+        }
+
+        case ERRORS::UNKNOWN_FUNC:
+        {
+            Node::FunctionCallNode *func_node = static_cast <Node::FunctionCallNode*> (node);
+            res = std::string {"Unknown function with name \""} + func_node->name_ + std::string {"\"\n"};
+            break;
+        }
+
+        case ERRORS::UNKNOWN_VARIABLE:
+        {
+            Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node);
+            res = std::string {"Unknown variable \""} + var_node->name_ + std::string {"\"\n"};
+            break;
+        }
+
+        case ERRORS::INCORRECT_TREE:
+        {
+            res = std::string {"Incorrect tree error (should be parsing error)\n"};
+            break;
+        }
+        
+        case ERRORS::NOT_A_VARIABLE:
+        {
+            res = std::string {"There isn't variable at leftward in assignment\n"};
+            break;
+        }
+
+        case ERRORS::UNKNOWN_OPERATION:
+        {
+            Node::OperationNode* op_node = static_cast <Node::OperationNode*> (node);
+            res = std::string {"Unknown operation code \""} + std::to_string (op_node->op_type_) + std::string {"\"\n"};
+            break;
+        }
+
+        case ERRORS::EMPTY_CONDITION:
+        {
+            res = std::string {"Empty condition in conditional block\n"};
+            break;
+        }
+
+        case ERRORS::UNKNOWN_COND_OP:
+        {
+            Node::ConditionNode* cond_node = static_cast <Node::ConditionNode*> (node);
+            res = std::string {"Unknown conditional block \""} + std::to_string (static_cast <int> (cond_node->cond_type_)) + std::string {"\"\n"};
+            break;
+        }
+
+        case ERRORS::UNKNOWN_NODETYPE:
+        {
+            res = std::string {"Unknown node type \""} + std::to_string (static_cast <int> (node->type_)) + std::string {"\"\n"};
+            break;
+        }
+
+        default:
+        {
+            res = std::string {"Unknown error \""} + std::to_string (static_cast <int> (error_code)) + std::string {"\"\n"};
+            break;
+        }
+    }
+
+    res += std::to_string (row_number) + std::string {" | "} + code_row + std::string {"\n"};
+
+    return res;
+}
+
 //other funcs
 
 void start_interpretate (const AST::Tree &tree)
 {
     scope *global_scope = new scope;
 
-    interpretate (global_scope, tree.top_, global_scope);
+    try 
+    {
+        interpretate (global_scope, tree.top_, global_scope);
+    }
+
+    catch (std::string error)
+    {
+        delete global_scope;
+        throw error;
+    }
 
     delete global_scope;
 }
@@ -50,7 +141,7 @@ void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope)
     while (cur_node != nullptr)
     {
         if (cur_node->type_ != AST::NodeType::ORDER_OP)
-            throw ERRORS::MISSED_SEMICOLON;
+            throw get_error_message (ERRORS::MISSED_SEMICOLON, node);
 
         cur_exec_node = cur_node->left_;
 
@@ -77,7 +168,7 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
             basic_variable* find_res = scope_->find (var_node->name_);
             
             if (find_res == nullptr)
-                throw ERRORS::UNKNOWN_VARIABLE;
+                throw get_error_message (ERRORS::UNKNOWN_VARIABLE, node);
 
             variable <int> *var = static_cast <variable <int> *> (find_res);
 
@@ -105,8 +196,7 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
             break;
 
         default:
-            // std::cout << static_cast <int> (node->type_)<< std::endl;
-            throw ERRORS::UNKNOWN_NODETYPE;
+            throw get_error_message (ERRORS::UNKNOWN_NODETYPE, node);
     }
 
     return 0;
@@ -121,13 +211,13 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
     if ((node->op_type_ / 1000) == 1) // ToDo: 1000 = const, maybe binary?
     {
         if (node->left_ == nullptr)
-            throw ERRORS::INCORRECT_TREE;
+            throw get_error_message (ERRORS::INCORRECT_TREE, node);
     }
 
     else 
     {
         if (node->left_ == nullptr or node->right_ == nullptr)
-            throw ERRORS::INCORRECT_TREE;
+            throw get_error_message (ERRORS::INCORRECT_TREE, node);
     }
 
     if (node->op_type_ != AST::OpType::ASS)
@@ -220,7 +310,7 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
             return process_post_increment (scope_, node, -1);
 
         default:
-            throw ERRORS::UNKNOWN_OPERATION;
+            throw get_error_message (ERRORS::UNKNOWN_OPERATION, node);
     }
 
     return 0;
@@ -229,7 +319,7 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
 int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_scope)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
-            throw ERRORS::NOT_A_VARIABLE;
+            throw get_error_message (ERRORS::NOT_A_VARIABLE, node_);
 
     Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_->left_);
 
@@ -256,14 +346,14 @@ int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_s
 int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
-        throw ERRORS::NOT_A_VARIABLE;
+        throw get_error_message (ERRORS::NOT_A_VARIABLE, node_);
 
     Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
     if (abs_var == nullptr)
-        throw ERRORS::UNKNOWN_VARIABLE;
+        throw get_error_message (ERRORS::UNKNOWN_VARIABLE, node_);
 
     variable <int> *var_value = static_cast <variable <int> *> (abs_var);
 
@@ -275,14 +365,14 @@ int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_va
 int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
    if (node_->left_->type_ != AST::NodeType::VARIABLE)
-        throw ERRORS::NOT_A_VARIABLE;
+        throw get_error_message (ERRORS::NOT_A_VARIABLE, node_);
 
     Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
     if (abs_var == nullptr)
-        throw ERRORS::UNKNOWN_VARIABLE;
+        throw get_error_message (ERRORS::UNKNOWN_VARIABLE, node_);
 
     variable <int> *var_value = static_cast <variable <int> *> (abs_var);
 
@@ -296,7 +386,7 @@ int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_v
 int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *global_scope)
 {
     if (node_->left_ == nullptr)
-        throw ERRORS::EMPTY_CONDITION;
+        throw get_error_message (ERRORS::EMPTY_CONDITION, node_);
 
     scope *cur_scope = scope_->create_nested_scope();
 
@@ -317,7 +407,7 @@ int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *glob
             break;
         
         default:
-            throw ERRORS::UNKNOWN_COND_OP;
+            throw get_error_message (ERRORS::UNKNOWN_COND_OP, node_);
     }
 
     scope_->scope_vec.pop_back ();
@@ -344,7 +434,7 @@ int process_funccall_node (scope  *scope_, AST::AbstractNode *node, scope *globa
     }
 
     else 
-        throw ERRORS::UNKNOWN_FUNC;
+        throw get_error_message (ERRORS::UNKNOWN_FUNC, node);
 
     return res;
 }
