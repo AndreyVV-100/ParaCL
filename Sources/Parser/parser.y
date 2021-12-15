@@ -35,32 +35,32 @@ AST::AbstractNode* BindNodes(AST::AbstractNode* lhs, AST::AbstractNode* rhs,
 }
 
 %token
-    LOR             "||"
-    LAND            "&&"
-    EQU             "=="
-    EQL             "<="
-    EQG             ">="
-    STL             "<"
-    STG             ">"
-    SUB             "-"
-    ADD             "+"
-    MUL             "*"
-    DIV             "/"
-    ASS             "="
-    SCOLON          ";"
-    OPEXPRBRACE     "("
-    CLEXPRBRACE     ")"
-    OPSCOPEBRACE    "{"
-    CLSCOPEBRACE    "}"
-    WHILE           "while"
-    IF              "if"
-    LEXERR
+    SCOLON                  ";"
+    OPEXPRBRACE             "("
+    CLEXPRBRACE             ")"
+    OPSCOPEBRACE            "{"
+    CLSCOPEBRACE            "}"
+    WHILE                   "while"
+    IF                      "if"
+    <AST::OpType> ASS       "="
+    <AST::OpType> LOR       "||"
+    <AST::OpType> LAND      "&&"
+    <AST::OpType> EQU       "=="
+    <AST::OpType> EQL       "<="
+    <AST::OpType> EQG       ">="
+    <AST::OpType> STL       "<"
+    <AST::OpType> STG       ">"
+    <AST::OpType> SUB       "-"
+    <AST::OpType> ADD       "+"
+    <AST::OpType> MUL       "*"
+    <AST::OpType> DIV       "/"
     <std::string> PRINT
     <std::string> SCAN
     <std::string> WORD
     <std::string> FUNC
     <int> NUMBER
     <int> ZERO
+    LEXERR
 ;
 
 %left '+' '-' '*' '/'
@@ -68,7 +68,6 @@ AST::AbstractNode* BindNodes(AST::AbstractNode* lhs, AST::AbstractNode* rhs,
 %nterm 
     <AST::AbstractNode*> STMS
     <AST::AbstractNode*> STM
-    <AST::AbstractNode*> ASSIGN
     <AST::AbstractNode*> EXPR
     <AST::AbstractNode*> COND
     <AST::AbstractNode*> MATH_A
@@ -85,6 +84,8 @@ AST::AbstractNode* BindNodes(AST::AbstractNode* lhs, AST::AbstractNode* rhs,
     <AST::AbstractNode*> MATH_Tw
     <AST::AbstractNode*> MATH_P
     <AST::AbstractNode*> MATH_Q
+    <AST::AbstractNode*> MATH_Z
+    <AST::AbstractNode*> MATH_Zw
     <AST::AbstractNode*> SCOPE
     <AST::AbstractNode*> EXPRBRACE
     <AST::AbstractNode*> VAL
@@ -94,105 +95,120 @@ AST::AbstractNode* BindNodes(AST::AbstractNode* lhs, AST::AbstractNode* rhs,
 
 %start program
 
+/* %destructor { delete $$; } <AST::AbstractNode*> */
+
 %%
 
 program: STMS                                    { driver->insert($1); }
 
 STMS: STM STMS                                   { $$ = AST::MakeORD($1, $2, driver->getlineno()); }
-    | %empty									 { $$ = nullptr; }
+    | %empty                                     { $$ = nullptr; }
 ;
 
-STM: ASSIGN                                      { $$ = $1; }
-   | EXPR		                                 { $$ = $1; }
+STM: EXPR		                                 { $$ = $1; }
    | SCOPE                                       { $$ = $1; }
    | COND                                        { $$ = $1; }
-   | CALLFUNC EXPR			                     { $$ = $1;
+   | CALLFUNC EXPR                               { $$ = $1;
                                                    $1->left_ = $2; 
                                                    $2->prev_ = $$; }
-   | CALLFUNC error								 { delete $1;
-                                                   driver->push_error("expected arguments"); }
-   | SCOLON                                      { $$ = nullptr; }
+   | CALLFUNC error                              { driver->push_error("expected arguments in function"); 
+                                                   delete $1;      }
+   | SCOLON                                      { $$ = nullptr;   }
 ;
 
-ASSIGN: VAR ASS EXPR         		             { $$ = AST::MakeOp($1, AST::OpType::ASS, $3, driver->getlineno()); }
+EXPR: MATH_Z SCOLON                              { $$ = $1; }
+    | MATH_Z error                               { delete $1;
+                                                   driver->push_err_text("expected ';' "); }
 ;
 
-EXPR: MATH_C SCOLON                              { $$ = $1; }
-    | MATH_C error								 { delete $1;
-                                                   driver->push_error("expected ';' at the end of input"); }
+MATH_Z: MATH_C MATH_Zw                           { $$ = BindNodes ($1, $2); }
+;
+
+MATH_Zw: ASS MATH_C MATH_Zw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | ASS error                               { driver->push_err_text("expected primary-expression "); }
+       | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_C: MATH_D MATH_Cw                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Cw: LOR MATH_D MATH_Cw                      { $$ = BindNodes ($2, $3, AST::OpType::LOR, driver->getlineno()); }
-       | LOR error                               { driver->push_err_text("expeced primary-expression before "); }
+MATH_Cw: LOR MATH_D MATH_Cw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | LOR error                               { driver->push_err_text("expected primary-expression "); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_D: MATH_A MATH_Dw                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Dw: LAND MATH_A MATH_Dw                     { $$ = BindNodes ($2, $3, AST::OpType::LAND, driver->getlineno()); }
-       | LAND error                              { driver->push_err_text("expeced primary-expression before "); }
+MATH_Dw: LAND MATH_A MATH_Dw                     { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | LAND error                              { driver->push_err_text("expected primary-expression "); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_A: MATH_B MATH_Aw                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Aw: EQU MATH_B MATH_Aw                      { $$ = BindNodes ($2, $3, AST::OpType::EQU, driver->getlineno()); }
-       | EQU error                               { driver->push_err_text("expeced primary-expression before "); }
+MATH_Aw: EQU MATH_B MATH_Aw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | EQU error                               { driver->push_err_text("expected primary-expression "); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_B: MATH_E MATH_Bw                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Bw: STL MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, AST::OpType::STL, driver->getlineno()); }
-       | STG MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, AST::OpType::STG, driver->getlineno()); }
-       | EQL MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, AST::OpType::EQL, driver->getlineno()); }
-       | EQG MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, AST::OpType::EQG, driver->getlineno()); }
-       | STL error                               { driver->push_err_text("expeced primary-expression before "); }
-       | STG error                               { driver->push_err_text("expeced primary-expression before "); }
-       | EQL error                               { driver->push_err_text("expeced primary-expression before "); }
-       | EQG error                               { driver->push_err_text("expeced primary-expression before "); }
+MATH_Bw: STL MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | STG MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | EQL MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | EQG MATH_E MATH_Bw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | STL error                               { driver->push_err_text("expected primary-expression "); }
+       | STG error                               { driver->push_err_text("expected primary-expression "); }
+       | EQL error                               { driver->push_err_text("expected primary-expression "); }
+       | EQG error                               { driver->push_err_text("expected primary-expression "); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_E: MATH_T MATH_Ew                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Ew: ADD MATH_T MATH_Ew                      { $$ = BindNodes ($2, $3, AST::OpType::ADD, driver->getlineno()); }
-       | SUB MATH_T MATH_Ew                      { $$ = BindNodes ($2, $3, AST::OpType::SUB, driver->getlineno()); }
-       | ADD error                               { driver->push_err_text("expeced primary-expression before "); }
-       | SUB error                               { driver->push_err_text("expeced primary-expression before "); }
+MATH_Ew: ADD MATH_T MATH_Ew                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | SUB MATH_T MATH_Ew                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | ADD error                               { driver->push_err_text("expected primary-expression "); }
+       | SUB error                               { driver->push_err_text("expected primary-expression "); }
        | %empty                                  { $$ = nullptr; }
 ;
 
 MATH_T: MATH_P MATH_Tw                           { $$ = BindNodes ($1, $2); }
 ;
 
-MATH_Tw: MUL MATH_P MATH_Tw                      { $$ = BindNodes ($2, $3, AST::OpType::MUL, driver->getlineno()); }
-       | DIV MATH_P MATH_Tw                      { $$ = BindNodes ($2, $3, AST::OpType::DIV, driver->getlineno()); }
-       | MUL error 								 { driver->push_err_text("expeced primary-expression before "); }
-       | DIV error                               { driver->push_err_text("expeced primary-expression before "); }
+MATH_Tw: MUL MATH_P MATH_Tw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | DIV MATH_P MATH_Tw                      { $$ = BindNodes ($2, $3, $1, driver->getlineno()); }
+       | MUL error                               { driver->push_err_text("expected primary-expression "); }
+       | DIV error                               { driver->push_err_text("expected primary-expression "); }
        | %empty                                  { $$ = nullptr; }
 ;
 
-MATH_P: MATH_Q									 { $$ = $1; }
-      | ADD MATH_Q								 { $$ = AST::MakeOp(AST::MakeVal(0, driver->getlineno()), AST::OpType::ADD, $2, driver->getlineno()); }
-      | SUB MATH_Q								 { $$ = AST::MakeOp(AST::MakeVal(0, driver->getlineno()), AST::OpType::SUB, $2, driver->getlineno()); }
-      | SUB error								 { driver->push_err_text("expeced primary-expression before "); }
-      | ADD error								 { driver->push_err_text("expeced primary-expression before "); }
-
+MATH_P: MATH_Q                                   { $$ = $1; }
+      | ADD MATH_Q                               { $$ = AST::MakeOp(AST::MakeVal(0, driver->getlineno()), $1, $2, driver->getlineno()); }
+      | SUB MATH_Q                               { $$ = AST::MakeOp(AST::MakeVal(0, driver->getlineno()), $1, $2, driver->getlineno()); }
+      | SUB error                                { driver->push_err_text("expected primary-expression "); }
+      | ADD error                                { driver->push_err_text("expected primary-expression "); }
+      | ASS error                                { driver->push_error("expected primary-expression before token '='" ); }
+      | LOR error                                { driver->push_error("expected primary-expression before token '||'"); }
+      | EQU error                                { driver->push_error("expected primary-expression before token '=='"); }
+      | EQL error                                { driver->push_error("expected primary-expression before token '<='"); }
+      | EQG error                                { driver->push_error("expected primary-expression before token '>='"); }
+      | STL error                                { driver->push_error("expected primary-expression before token '<'" ); }
+      | STG error                                { driver->push_error("expected primary-expression before token '>'" ); }
+      | MUL error                                { driver->push_error("expected primary-expression before token '*'" ); }
+      | DIV error                                { driver->push_error("expected primary-expression before token '/'" ); }
+      | LAND error                               { driver->push_error("expected primary-expression before token '&&'"); }
 ;
 
 MATH_Q: EXPRBRACE                                { $$ = $1; }
       | VAL                                      { $$ = $1; }
       | VAR                                      { $$ = $1; }
       | SCAN                                     { $$ = AST::MakeFunc($1, driver->getlineno()); }
-
+;
 
 VAL: NUMBER                                      { $$ = AST::MakeVal($1, driver->getlineno()); }
    | ZERO                                        { $$ = AST::MakeVal($1, driver->getlineno()); }
@@ -206,17 +222,21 @@ CALLFUNC: FUNC                                   { $$ = AST::MakeFunc($1, driver
 ;
 
 SCOPE: OPSCOPEBRACE STMS CLSCOPEBRACE            { $$ = $2; }
-     | OPSCOPEBRACE STMS error					 { driver->push_err_text("expeced ')' before "); }
+  /* | CLSCOPEBRACE error                        { driver->push_error("expected primary-expression before token '}'"); } */
+     | OPSCOPEBRACE STMS error                   { driver->push_err_text("expected '}' ");
+                                                   delete $2; }
 ;
 
-EXPRBRACE: OPEXPRBRACE MATH_C CLEXPRBRACE        { $$ = $2; }
-         | OPEXPRBRACE MATH_C error		         { driver->push_err_text("expeced '}' before "); }
+EXPRBRACE: OPEXPRBRACE MATH_Z CLEXPRBRACE        { $$ = $2; }
+         | CLEXPRBRACE error                     { driver->push_error("expected primary-expression before token ')'"); }
+         | OPEXPRBRACE MATH_Z error              { driver->push_err_text("expected ')' "); 
+                                                   delete $2; }
 ;
 
 COND: IF    EXPRBRACE SCOPE                      { $$ = AST::MakeCond($2, AST::CondType::IF,    $3, driver->getlineno());  }
     | WHILE EXPRBRACE SCOPE                      { $$ = AST::MakeCond($2, AST::CondType::WHILE, $3, driver->getlineno());  }
-    | IF	error						 		 { driver->push_error("wrong syntax in 'if'");    }
-    | WHILE	error								 { driver->push_error("wrong syntax in 'while'"); }
+    | IF	error                                { driver->push_error("wrong syntax in 'if'");    }
+    | WHILE	error                                { driver->push_error("wrong syntax in 'while'"); }
 %%
 
 namespace yy {
