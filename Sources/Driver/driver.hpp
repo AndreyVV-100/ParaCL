@@ -70,7 +70,7 @@ public:
                 yylval->build<std::string>() = plex_->YYText();
                 break;
             case yy::parser::token_type::LEXERR:
-                push_err_text (std::string("unrecognized symbol: ") + plex_->YYText());
+                push_error(std::string("unrecognized symbol: ") + plex_->YYText());
         }
 
         return tt;
