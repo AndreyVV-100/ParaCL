@@ -91,4 +91,6 @@ int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_v
 int process_condition_node (scope *scope_, AST::AbstractNode *node, scope *global_scope);
 
 int process_funccall_node (scope  *scope_, AST::AbstractNode *node, scope *global_scope);
+
+void process_scope_node (scope  *scope_, AST::AbstractNode *node, scope *global_scope);
 }

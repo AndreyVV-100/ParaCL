@@ -113,7 +113,7 @@ std::string get_error_message (ERRORS error_code, AST::AbstractNode *node)
     return res;
 }
 
-//other funcs
+//main funcs
 
 void start_interpretate (const AST::Tree &tree)
 {
@@ -191,8 +191,8 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
         case AST::NodeType::FUNCTION_CALL:
             return process_funccall_node (scope_, node, global_scope);
 
-        case AST::NodeType::ORDER_OP:
-            interpretate (scope_, node, global_scope);
+        case AST::NodeType::SCOPE:
+            process_scope_node (scope_, node, global_scope);
             break;
 
         default:
@@ -207,7 +207,7 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
     Node::OperationNode *node = static_cast <Node::OperationNode*> (node_);
 
     int left_val = 0, right_val = 0;
-
+    
     if ((node->op_type_ / 1000) == 1) // ToDo: 1000 = const, maybe binary?
     {
         if (node->left_ == nullptr)
@@ -225,7 +225,7 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
         left_val  = process_node (scope_, node_->left_, global_scope);
         right_val = process_node (scope_, node->right_, global_scope);
     }
-
+    
     switch (node->op_type_)
     {
         case AST::OpType::ADD:
@@ -388,7 +388,7 @@ int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *glob
     if (node_->left_ == nullptr)
         throw get_error_message (ERRORS::EMPTY_CONDITION, node_);
 
-    scope *cur_scope = scope_->create_nested_scope();
+    scope *cur_scope = scope_;
 
     Node::ConditionNode *cond_node = static_cast <Node::ConditionNode*> (node_);
 
@@ -409,10 +409,6 @@ int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *glob
         default:
             throw get_error_message (ERRORS::UNKNOWN_COND_OP, node_);
     }
-
-    scope_->scope_vec.pop_back ();
-
-    delete cur_scope;
 
     return 1;
 }
@@ -439,4 +435,26 @@ int process_funccall_node (scope  *scope_, AST::AbstractNode *node, scope *globa
     return res;
 }
 
+void process_scope_node (scope  *scope_, AST::AbstractNode *node, scope *global_scope)
+{
+    scope* cur_scope = nullptr;
+
+    cur_scope = scope_->create_nested_scope();
+    
+    try
+    {
+        if (node->left_ != nullptr)
+            interpretate (cur_scope, node->left_, global_scope);
+    }
+    catch(std::string error)
+    {
+        scope_->scope_vec.pop_back ();
+        delete cur_scope;
+
+        throw error;
+    }
+
+    scope_->scope_vec.pop_back ();
+    delete cur_scope;
+}
 };
