@@ -13,7 +13,6 @@
 #include <iostream>
 #include "AST.hpp"
 
-// forward decl of argument to parser
 namespace yy { class Driver; }
 }
 
@@ -221,7 +220,7 @@ CALLFUNC: FUNC                                   { $$ = AST::MakeFunc($1, driver
         | PRINT                                  { $$ = AST::MakeFunc($1, driver->getlineno()); }
 ;
 
-SCOPE: OPSCOPEBRACE STMS CLSCOPEBRACE            { $$ = $2; }
+SCOPE: OPSCOPEBRACE STMS CLSCOPEBRACE            { $$ = AST::MakeScope($2, driver->getlineno()); }
   /* | CLSCOPEBRACE error                        { driver->push_error("expected primary-expression before token '}'"); } */
      | OPSCOPEBRACE STMS error                   { driver->push_err_text("expected '}' ");
                                                    delete $2; }
