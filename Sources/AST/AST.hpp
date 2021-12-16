@@ -15,7 +15,8 @@ enum class NodeType
     CONDITION     = 3,
     FUNCTION_CALL = 4,
     FUNCTION_DECL = 5,  // Now not used
-    ORDER_OP      = 6
+    ORDER_OP      = 6,
+    SCOPE         = 7
 };
 
 enum OpType // ToDo: print name, move this
@@ -114,12 +115,13 @@ struct AbstractNode
     // ToDo: SetPrev() ?
 };
 
-AbstractNode* MakeVal  (int val, int lineno);
-AbstractNode* MakeVar  (std::string name, int lineno);
-AbstractNode* MakeFunc (std::string name, int lineno);
-AbstractNode* MakeOp   (AbstractNode* lhs, OpType op, AbstractNode* rhs, int lineno);
-AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs, int lineno);
-AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs, int lineno);
+AbstractNode* MakeVal   (int val, int lineno);
+AbstractNode* MakeVar   (std::string name, int lineno);
+AbstractNode* MakeFunc  (std::string name, int lineno);
+AbstractNode* MakeScope (AbstractNode *lhs, int lineno);
+AbstractNode* MakeOp    (AbstractNode* lhs, OpType op, AbstractNode* rhs, int lineno);
+AbstractNode* MakeCond  (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs, int lineno);
+AbstractNode* MakeORD   (AbstractNode *lhs, AbstractNode *rhs, int lineno);
 
 std::string get_code_row (int number);
 } // End of namespace AST

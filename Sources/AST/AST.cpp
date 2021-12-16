@@ -113,6 +113,14 @@ namespace AST
             case NodeType :: FUNCTION_DECL:
                 output << "Function declaration";
                 break;
+
+            case NodeType :: ORDER_OP:
+                output << "Order";
+                break;
+
+            case NodeType :: SCOPE:
+                output << "Scope";
+                break;
         }
     }
 
@@ -137,7 +145,8 @@ namespace AST
     AbstractNode* MakeVal  (int val, int lineno)          { return new Node :: ConstNode{val, lineno}; }
     AbstractNode* MakeVar  (std::string name, int lineno) { return new Node :: VariableNode{name, lineno}; }
     AbstractNode* MakeFunc (std::string name, int lineno) { return new Node :: FunctionCallNode{name, lineno}; }
-    AbstractNode* MakeORD  (AbstractNode *lhs, AbstractNode *rhs, int lineno) { return new Node :: OrderNode{lhs, rhs, lineno}; }
+    AbstractNode* MakeORD  (AbstractNode* lhs, AbstractNode *rhs, int lineno) { return new Node :: OrderNode{lhs, rhs, lineno}; }
+    AbstractNode* MakeScope (AbstractNode* lhs, int lineno) { return new Node :: ScopeNode{lhs, lineno}; }
 
     AbstractNode* MakeCond (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs, int lineno)
     {
@@ -164,7 +173,6 @@ namespace AST
 
         return tmp;
     }
-
 
     std::string get_code_row (int number)
     {

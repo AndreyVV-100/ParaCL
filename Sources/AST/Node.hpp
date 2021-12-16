@@ -106,7 +106,25 @@ struct OrderNode final : public AbstractNode
 
     void GraphPrintInfo (std::ostream& output) const override
     {
-        output << ";\n";
+        output << ";";
+        return;
+    }
+};
+
+struct ScopeNode final: public AbstractNode
+{
+    ScopeNode (AbstractNode *left, int lineno, AbstractNode *prev = nullptr):
+        AbstractNode (prev, NodeType::SCOPE, lineno)
+    {
+        left_ = left;
+
+        if (left_ != nullptr)
+            left_->prev_ = this;
+    }
+
+    void GraphPrintInfo (std::ostream& output) const override
+    {
+        output << "{}";
         return;
     }
 };
