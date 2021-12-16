@@ -1,0 +1,6 @@
+//first comment
+a = 3;
+print a + ?;
+//second comment
+print 10;
+//last comment
