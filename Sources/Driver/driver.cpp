@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     std::streambuf* cin_buff = std::cin.rdbuf(); // ToDo: Bad crutch, but my idea. How to fix it?
     std::cin.rdbuf (program.rdbuf());
 
-    yy::Driver driver{};
+    yy::Driver driver{argv[1]};
 
     try { driver.parse(); }  
     catch(std::vector<std::string> errors) // ToDo: Not string? Is it possible?

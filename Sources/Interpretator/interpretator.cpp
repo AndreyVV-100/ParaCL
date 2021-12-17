@@ -33,11 +33,11 @@ basic_variable* scope::find (std::string name) const
 
 //error processing
 
-std::string get_error_message (ERRORS error_code, AST::AbstractNode *node)
+std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode *node)
 {
     int row_number = node->lineno_;
 
-    std::string code_row = AST::get_code_row (row_number);
+    std::string code_row = get_code_row (row_number);
 
     std::string res = {};
 
@@ -115,25 +115,27 @@ std::string get_error_message (ERRORS error_code, AST::AbstractNode *node)
 
 //other funcs
 
-void start_interpretate (const AST::Tree &tree)
+void start_interpretate (const AST::Tree &tree, std::vector<std::string>* program)
 {
-    scope *global_scope = new scope;
+    interpreter interpreter_ {program};
 
-    try 
-    {
-        interpretate (global_scope, tree.top_, global_scope);
-    }
+    interpreter_.interpretate (interpreter_.global, tree.top_);
 
-    catch (std::string error)
-    {
-        delete global_scope;
-        throw error;
-    }
+    // try 
+    // {
+    //     interpreter_.interpretate (interpreter_.global, tree.top_);
+    // }
 
-    delete global_scope;
+    // catch (std::string error)
+    // {
+    //     delete global_scope;
+    //     throw error;
+    // }
+
+    // delete global_scope;
 }
 
-void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope)
+void interpreter::interpretate (scope *scope_, AST::AbstractNode *node)
 {
     AST::AbstractNode *cur_node = node;
     AST::AbstractNode *cur_exec_node = nullptr;
@@ -147,14 +149,14 @@ void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope)
 
         if (cur_exec_node != nullptr)
         {
-            process_node (scope_, cur_exec_node, global_scope);
+            process_node (scope_, cur_exec_node);
         }
 
         cur_node = cur_node->right_;
     }
 }
 
-int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
+int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
 {
     if (node == nullptr)
         return 0;
@@ -183,16 +185,16 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
         }
 
         case AST::NodeType::OPERATION:
-            return process_operation_node (scope_, node, global_scope);
+            return process_operation_node (scope_, node);
         
         case AST::NodeType::CONDITION:
-            return process_condition_node (scope_, node, global_scope);
+            return process_condition_node (scope_, node);
 
         case AST::NodeType::FUNCTION_CALL:
-            return process_funccall_node (scope_, node, global_scope);
+            return process_funccall_node (scope_, node);
 
         case AST::NodeType::ORDER_OP:
-            interpretate (scope_, node, global_scope);
+            interpretate (scope_, node);
             break;
 
         default:
@@ -202,7 +204,7 @@ int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope)
     return 0;
 }
 
-int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *global_scope)
+int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_)
 {
     Node::OperationNode *node = static_cast <Node::OperationNode*> (node_);
 
@@ -222,8 +224,8 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
 
     if (node->op_type_ != AST::OpType::ASS)
     {
-        left_val  = process_node (scope_, node_->left_, global_scope);
-        right_val = process_node (scope_, node->right_, global_scope);
+        left_val  = process_node (scope_, node_->left_);
+        right_val = process_node (scope_, node->right_);
     }
 
     switch (node->op_type_)
@@ -244,7 +246,7 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
             return left_val % right_val;
 
         case AST::OpType::ASS:
-            return process_assignment (scope_, node_, global_scope);
+            return process_assignment (scope_, node_);
 
         case AST::OpType::EQU:
             return left_val == right_val;
@@ -316,7 +318,7 @@ int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *glob
     return 0;
 }
 
-int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_scope)
+int interpreter::process_assignment (scope *scope_, AST::AbstractNode *node_)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
             throw get_error_message (ERRORS::NOT_A_VARIABLE, node_);
@@ -336,14 +338,14 @@ int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_s
 
     variable <int> *var_value = static_cast <variable <int> *> (abs_var);
 
-    int right_res = process_node (scope_, node_->right_, global_scope);
+    int right_res = process_node (scope_, node_->right_);
 
     var_value->value = right_res;
 
     return right_res;
 }
 
-int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
+int interpreter::process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
         throw get_error_message (ERRORS::NOT_A_VARIABLE, node_);
@@ -362,7 +364,7 @@ int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_va
     return var_value->value;
 }
 
-int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
+int interpreter::process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
    if (node_->left_->type_ != AST::NodeType::VARIABLE)
         throw get_error_message (ERRORS::NOT_A_VARIABLE, node_);
@@ -383,7 +385,7 @@ int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_v
     return res; 
 }
 
-int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *global_scope)
+int interpreter::process_condition_node (scope *scope_, AST::AbstractNode *node_)
 {
     if (node_->left_ == nullptr)
         throw get_error_message (ERRORS::EMPTY_CONDITION, node_);
@@ -395,14 +397,14 @@ int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *glob
     switch (cond_node->cond_type_)
     {
         case AST::CondType::IF:
-            if (process_node (cur_scope, node_->left_, global_scope))
-                process_node (cur_scope, node_->right_, global_scope);
+            if (process_node (cur_scope, node_->left_))
+                process_node (cur_scope, node_->right_);
 
             break;
 
         case AST::CondType::WHILE:
-            while (process_node (cur_scope, node_->left_, global_scope))
-                process_node (cur_scope, node_->right_, global_scope);
+            while (process_node (cur_scope, node_->left_))
+                process_node (cur_scope, node_->right_);
 
             break;
         
@@ -417,7 +419,7 @@ int process_condition_node (scope *scope_, AST::AbstractNode *node_, scope *glob
     return 1;
 }
 
-int process_funccall_node (scope  *scope_, AST::AbstractNode *node, scope *global_scope)
+int interpreter::process_funccall_node (scope  *scope_, AST::AbstractNode *node)
 {
     int res = 0;
 
@@ -430,7 +432,7 @@ int process_funccall_node (scope  *scope_, AST::AbstractNode *node, scope *globa
 
     else if (!func_node->name_.compare (std::string {"print"}))
     {
-        std::cout << process_node (scope_, node->left_, global_scope) << std::endl;
+        std::cout << process_node (scope_, node->left_) << std::endl;
     }
 
     else 

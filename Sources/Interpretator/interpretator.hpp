@@ -72,23 +72,36 @@ class scope
     basic_variable* find (std::string name) const;
 };
 
-std::string get_error_message (ERRORS error_code, std::string &code_row, int row_number);
+struct interpreter
+{
+    scope* global;
+    std::vector<std::string>* program;
 
-void start_interpretate (const AST::Tree &tree);
+    interpreter(std::vector<std::string>* program): global{new scope}, program{program} {}
 
-void interpretate (scope *scope_, AST::AbstractNode *node, scope *global_scope);
+    ~interpreter() { delete global; }
 
-int process_node (scope *scope_, AST::AbstractNode *node, scope *global_scope);
+    std::string get_code_row (int number) { return (*program)[number - 1]; }
 
-int process_operation_node (scope *scope_, AST::AbstractNode *node_, scope *global_scope);
+    std::string get_error_message (ERRORS error_code, AST::AbstractNode *node);
 
-int process_assignment (scope *scope_, AST::AbstractNode *node_, scope *global_scope);
+    void interpretate (scope *scope_, AST::AbstractNode *node);
 
-int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val);
+    int process_node (scope *scope_, AST::AbstractNode *node);
 
-int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val);
+    int process_operation_node (scope *scope_, AST::AbstractNode *node_);
 
-int process_condition_node (scope *scope_, AST::AbstractNode *node, scope *global_scope);
+    int process_assignment (scope *scope_, AST::AbstractNode *node_);
 
-int process_funccall_node (scope  *scope_, AST::AbstractNode *node, scope *global_scope);
+    int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val);
+
+    int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val);
+
+    int process_condition_node (scope *scope_, AST::AbstractNode *node);
+
+    int process_funccall_node (scope  *scope_, AST::AbstractNode *node);
+};
+
+void start_interpretate (const AST::Tree &tree, std::vector<std::string>* program);
+
 }

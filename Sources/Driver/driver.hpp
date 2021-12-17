@@ -7,15 +7,28 @@
 #include <FlexLexer.h>
 #include "interpretator.hpp"
 #include <cstring>
+#include <fstream>
 
 namespace yy {
 
 class Driver final {
     FlexLexer *plex_;
     AST::Tree tree;
+    std::vector<std::string> program;
     std::vector<std::string> errors;
+
 public:
-    Driver(): plex_(new yyFlexLexer), tree{} {}
+    Driver(const char* filename): plex_(new yyFlexLexer), tree{} 
+    {
+        std::fstream inputfile{filename, std::ios_base::in};
+
+        while (inputfile)
+        {
+            std::string line;
+            std::getline(inputfile, line);
+            program.push_back(line);
+        }
+    }
 
     parser::token_type yylex(parser::semantic_type *yylval) // ToDo: move to driver.cpp?
     {
@@ -91,7 +104,8 @@ public:
     {
         errors.push_back (
                "line: " 	+ std::to_string(plex_->lineno()) +
-               " | error: " + error
+               " | error: " + error + "\n\t| " + 
+               program[plex_->lineno() - 1]
         );
     }
 
@@ -107,7 +121,7 @@ public:
 
     void interpretate ()
     {
-        interpretator::start_interpretate (tree);
+        interpretator::start_interpretate (tree, &program);
     }
 
     void printout() const { tree.PrintTree ("graph.dot"); }
