@@ -100,6 +100,8 @@ struct interpreter
     int process_condition_node (scope *scope_, AST::AbstractNode *node);
 
     int process_funccall_node (scope  *scope_, AST::AbstractNode *node);
+
+    void process_scope_node (scope  *scope_, AST::AbstractNode *node);
 };
 
 void start_interpretate (const AST::Tree &tree, std::vector<std::string>* program);

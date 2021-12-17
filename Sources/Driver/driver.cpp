@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     // ToDo: #ifdef DEBUG driver.printout();
     std::cin.rdbuf (cin_buff);
 
-   driver.printout();
+    driver.printout();
 
     try { driver.interpretate(); }
     catch(std::string error) 

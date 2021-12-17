@@ -113,7 +113,7 @@ std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode
     return res;
 }
 
-//other funcs
+//main funcs
 
 void start_interpretate (const AST::Tree &tree, std::vector<std::string>* program)
 {
@@ -193,8 +193,8 @@ int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
         case AST::NodeType::FUNCTION_CALL:
             return process_funccall_node (scope_, node);
 
-        case AST::NodeType::ORDER_OP:
-            interpretate (scope_, node);
+        case AST::NodeType::SCOPE:
+            process_scope_node (scope_, node);
             break;
 
         default:
@@ -209,7 +209,7 @@ int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_
     Node::OperationNode *node = static_cast <Node::OperationNode*> (node_);
 
     int left_val = 0, right_val = 0;
-
+    
     if ((node->op_type_ / 1000) == 1) // ToDo: 1000 = const, maybe binary?
     {
         if (node->left_ == nullptr)
@@ -227,7 +227,7 @@ int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_
         left_val  = process_node (scope_, node_->left_);
         right_val = process_node (scope_, node->right_);
     }
-
+    
     switch (node->op_type_)
     {
         case AST::OpType::ADD:
@@ -390,7 +390,7 @@ int interpreter::process_condition_node (scope *scope_, AST::AbstractNode *node_
     if (node_->left_ == nullptr)
         throw get_error_message (ERRORS::EMPTY_CONDITION, node_);
 
-    scope *cur_scope = scope_->create_nested_scope();
+    scope *cur_scope = scope_;
 
     Node::ConditionNode *cond_node = static_cast <Node::ConditionNode*> (node_);
 
@@ -411,10 +411,6 @@ int interpreter::process_condition_node (scope *scope_, AST::AbstractNode *node_
         default:
             throw get_error_message (ERRORS::UNKNOWN_COND_OP, node_);
     }
-
-    scope_->scope_vec.pop_back ();
-
-    delete cur_scope;
 
     return 1;
 }
@@ -441,4 +437,26 @@ int interpreter::process_funccall_node (scope  *scope_, AST::AbstractNode *node)
     return res;
 }
 
+void interpreter::process_scope_node (scope  *scope_, AST::AbstractNode *node)
+{
+    scope* cur_scope = nullptr;
+
+    cur_scope = scope_->create_nested_scope();
+    
+    try
+    {
+        if (node->left_ != nullptr)
+            interpretate (cur_scope, node->left_);
+    }
+    catch(std::string error)
+    {
+        scope_->scope_vec.pop_back ();
+        delete cur_scope;
+
+        throw error;
+    }
+
+    scope_->scope_vec.pop_back ();
+    delete cur_scope;
+}
 };
