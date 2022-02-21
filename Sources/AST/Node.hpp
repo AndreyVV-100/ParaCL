@@ -11,7 +11,7 @@ struct VariableNode final : public AbstractNode
     std::string name_;
 
     VariableNode (std::string name, int lineno, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: VARIABLE, lineno),
+        AbstractNode (NodeType :: VARIABLE, lineno, prev),
         name_ (name)
     { ; }
 
@@ -27,7 +27,7 @@ struct ConstNode final : public AbstractNode
     int value_; // TODO: rework for all other types
 
     ConstNode (int value, int lineno, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: CONST, lineno),
+        AbstractNode (NodeType :: CONST, lineno, prev),
         value_ (value)
     { ; }
 
@@ -42,8 +42,8 @@ struct OperationNode final : public AbstractNode
 {
     OpType op_type_;
 
-    OperationNode (OpType op_type, int lineno, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: OPERATION, lineno),
+    OperationNode (OpType op_type, int lineno, AbstractNode* lhs, AbstractNode* rhs, AbstractNode* prev = nullptr):
+        AbstractNode (NodeType :: OPERATION, lineno, lhs, rhs, prev),
         op_type_ (op_type)
     { ; }
 
@@ -58,8 +58,8 @@ struct ConditionNode final : public AbstractNode
 {
     CondType cond_type_;
 
-    ConditionNode (CondType cond_type, int lineno, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: CONDITION, lineno),
+    ConditionNode (CondType cond_type, int lineno, AbstractNode* lhs, AbstractNode* rhs, AbstractNode* prev = nullptr):
+        AbstractNode (NodeType :: CONDITION, lineno, lhs, rhs, prev),
         cond_type_ (cond_type)
     { ; }
 
@@ -77,8 +77,8 @@ struct FunctionCallNode final : public AbstractNode
 
     std::string name_;
 
-    FunctionCallNode (std::string name, int lineno, AbstractNode* prev = nullptr):
-        AbstractNode (prev, NodeType :: FUNCTION_CALL, lineno),
+    FunctionCallNode (std::string name, int lineno, AbstractNode* lhs, AbstractNode* rhs, AbstractNode* prev = nullptr):
+        AbstractNode (NodeType :: FUNCTION_CALL, lineno, lhs, rhs, prev),
         name_ (name)
     { ; }
 
@@ -89,20 +89,11 @@ struct FunctionCallNode final : public AbstractNode
     }
 };
 
-struct OrderNode final : public AbstractNode
+struct OrderNode final: public AbstractNode
 {
-    OrderNode (AbstractNode *left, AbstractNode *right, int lineno, AbstractNode *prev = nullptr):
-        AbstractNode (prev, NodeType::ORDER_OP, lineno) 
-    {
-        left_  = left;
-        right_ = right;
-        
-        if (left_ != nullptr)
-            left_->prev_ = this;
-
-        if (right_ != nullptr)
-            right_->prev_ = this;
-    }
+    OrderNode (int lineno, AbstractNode* lhs, AbstractNode* rhs, AbstractNode *prev = nullptr):
+        AbstractNode (NodeType::ORDER_OP, lineno, lhs, rhs, prev)
+    { ; }
 
     void GraphPrintInfo (std::ostream& output) const override
     {
@@ -113,14 +104,9 @@ struct OrderNode final : public AbstractNode
 
 struct ScopeNode final: public AbstractNode
 {
-    ScopeNode (AbstractNode *left, int lineno, AbstractNode *prev = nullptr):
-        AbstractNode (prev, NodeType::SCOPE, lineno)
-    {
-        left_ = left;
-
-        if (left_ != nullptr)
-            left_->prev_ = this;
-    }
+    ScopeNode (int lineno, AbstractNode *lhs, AbstractNode *prev = nullptr):
+        AbstractNode (NodeType::SCOPE, lineno, lhs, prev)
+    { ; }
 
     void GraphPrintInfo (std::ostream& output) const override
     {

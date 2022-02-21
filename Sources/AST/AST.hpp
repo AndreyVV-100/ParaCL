@@ -95,11 +95,17 @@ struct AbstractNode
 
     public:
 
-    AbstractNode (AbstractNode* prev, NodeType type, int lineno):
+    AbstractNode (NodeType type, int lineno, AbstractNode* left = nullptr, AbstractNode* right = nullptr, AbstractNode* prev = nullptr):
         prev_ (prev),
+        left_ (left),
+        right_(right),
         type_ (type),
         lineno_ (lineno)
-    { ; }
+    { 
+        if (left_)   left_->prev_ = this;
+        if (right_) right_->prev_ = this;
+    }
+    
     virtual ~AbstractNode() = default;
 
     AbstractNode (const AbstractNode&) = delete;
@@ -115,12 +121,12 @@ struct AbstractNode
     // ToDo: SetPrev() ?
 };
 
-AbstractNode* MakeVal   (int val, int lineno);
-AbstractNode* MakeVar   (std::string name, int lineno);
-AbstractNode* MakeFunc  (std::string name, int lineno);
-AbstractNode* MakeScope (AbstractNode *lhs, int lineno);
-AbstractNode* MakeOp    (AbstractNode* lhs, OpType op, AbstractNode* rhs, int lineno);
-AbstractNode* MakeCond  (AbstractNode* lhs, CondType cond_type, AbstractNode* rhs, int lineno);
-AbstractNode* MakeORD   (AbstractNode *lhs, AbstractNode *rhs, int lineno);
+    AbstractNode* MakeVal   (int val,            int lineno);
+    AbstractNode* MakeVar   (std::string name,   int lineno);
+    AbstractNode* MakeFunc  (std::string name,   int lineno, AbstractNode* lhs);
+    AbstractNode* MakeScope (                    int lineno, AbstractNode* lhs);
+    AbstractNode* MakeORD   (                    int lineno, AbstractNode* lhs, AbstractNode* rhs);
+    AbstractNode* MakeOp    (OpType op,          int lineno, AbstractNode* lhs, AbstractNode* rhs);
+    AbstractNode* MakeCond  (CondType cond_type, int lineno, AbstractNode* lhs, AbstractNode* rhs);
 
 } // End of namespace AST
