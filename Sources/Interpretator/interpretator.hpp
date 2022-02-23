@@ -75,15 +75,17 @@ class scope
 struct interpreter
 {
     scope* global;
-    std::vector<std::string>* program;
 
-    interpreter(std::vector<std::string>* program): global{new scope}, program{program} {}
+    std::string error_message{};
+    int error_row_number = 0;
+
+    interpreter(std::vector<std::string>* program): global{new scope} {}
 
     ~interpreter() { delete global; }
 
-    std::string get_code_row (int number) { return (*program)[number - 1]; }
-
     std::string get_error_message (ERRORS error_code, AST::AbstractNode *node);
+
+    void process_error (ERRORS error_code, AST::AbstractNode *node);
 
     void interpretate (scope *scope_, AST::AbstractNode *node);
 
