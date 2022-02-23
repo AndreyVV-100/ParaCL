@@ -20,7 +20,7 @@ add_flex_bison_dependency(scanner parser)
 add_executable(${PROJECT_NAME} 
   ${CMAKE_CURRENT_SOURCE_DIR}/Sources/AST/AST.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Driver/driver.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Interpretator/interpretator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Interpreter/interpreter.cpp
   ${BISON_parser_OUTPUTS}
   ${FLEX_scanner_OUTPUTS}
 )
@@ -30,7 +30,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_include_directories(${PROJECT_NAME} 
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/AST
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Driver
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Interpretator
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Interpreter
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Lexer
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )

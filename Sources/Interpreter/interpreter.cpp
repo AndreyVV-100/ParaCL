@@ -1,4 +1,4 @@
-#include <interpretator.hpp>
+#include "interpreter.hpp"
 // ToDo: unificate codestyle?
 
 namespace interpretator
@@ -112,30 +112,10 @@ std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode
 void interpreter::process_error (ERRORS error_code, AST::AbstractNode *node)
 {
     error_message = get_error_message (error_code, node);
-    error_row_number = node->lineno_;
+    error_line_number = node->lineno_;
 }
 
 //main funcs
-
-void start_interpretate (const AST::Tree &tree)
-{
-    interpreter interpreter_ {};
-
-    interpreter_.interpretate (interpreter_.global, tree.top_);
-
-    // try 
-    // {
-    //     interpreter_.interpretate (interpreter_.global, tree.top_);
-    // }
-
-    // catch (std::string error)
-    // {
-    //     delete global_scope;
-    //     throw error;
-    // }
-
-    // delete global_scope;
-}
 
 void interpreter::interpretate (scope *scope_, AST::AbstractNode *node)
 {

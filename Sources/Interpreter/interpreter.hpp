@@ -77,7 +77,7 @@ struct interpreter
     scope* global;
 
     std::string error_message{};
-    int error_row_number = 0;
+    int error_line_number{};
 
     interpreter(): global{new scope} {}
 

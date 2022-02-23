@@ -9,7 +9,7 @@
 #include <FlexLexer.h>
 #include "parser.tab.hh"
 
-#include "interpretator.hpp"
+#include "interpreter.hpp"
 #include "lexer.hpp"
 
 namespace yy {
@@ -17,11 +17,12 @@ namespace yy {
 class Driver final {
     std::unique_ptr<ParaCLlexer> plex;
     AST::Tree tree;
+    interpretator::interpreter interpreter_;
     std::vector<std::string> program;
     std::vector<std::string> errors;
 
 public:
-    Driver(const char* filename): plex{new ParaCLlexer}, tree{} 
+    Driver(const char* filename): plex{new ParaCLlexer}, tree{}, interpreter_{}
     {
         std::fstream inputfile{filename, std::ios_base::in};
 
@@ -126,7 +127,7 @@ public:
             push_error (error + "at the end of input", location);
     }
 
-    bool parse_err() { return !errors.empty(); }
+    bool err() { return !errors.empty(); }
 
     void print_errors() 
     {
@@ -138,7 +139,16 @@ public:
 
     void interpretate ()
     {
-        interpretator::start_interpretate (tree);
+        try { interpreter_.interpretate (interpreter_.global, tree.top_); }
+        catch (std::runtime_error e)
+        { 
+            std::cout << e.what() << '\n';
+            errors.push_back (
+               "line: " 	+ std::to_string(interpreter_.error_line_number) +
+               " | error: " + interpreter_.error_message + "\t| " + 
+               program[interpreter_.error_line_number - 1]
+            );
+        }
     }
 
     void printout() const { tree.PrintTree ("graph.dot"); }

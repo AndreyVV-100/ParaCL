@@ -32,17 +32,10 @@ int main(int argc, char** argv)
 
     std::cin.rdbuf (cin_buff);
 
-    if (driver.parse_err())
-        driver.print_errors();
-    else
-    {
-        try { driver.interpretate(); }  
-        catch(std::runtime_error e)
-        { 
-            std::cout << e.what() << '\n';
-            driver.print_errors();
-        }
-    }
+    if (!driver.err())
+        driver.interpretate();
+
+    driver.print_errors();
 
     return 0;
 }
