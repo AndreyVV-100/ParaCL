@@ -79,7 +79,7 @@ struct interpreter
     std::string error_message{};
     int error_row_number = 0;
 
-    interpreter(std::vector<std::string>* program): global{new scope} {}
+    interpreter(): global{new scope} {}
 
     ~interpreter() { delete global; }
 
@@ -106,6 +106,6 @@ struct interpreter
     void process_scope_node (scope  *scope_, AST::AbstractNode *node);
 };
 
-void start_interpretate (const AST::Tree &tree, std::vector<std::string>* program);
+void start_interpretate (const AST::Tree &tree);
 
 }

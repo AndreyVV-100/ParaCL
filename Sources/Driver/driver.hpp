@@ -121,7 +121,7 @@ public:
 
     void interpretate ()
     {
-        interpretator::start_interpretate (tree, &program);
+        interpretator::start_interpretate (tree);
     }
 
     void printout() const { tree.PrintTree ("graph.dot"); }

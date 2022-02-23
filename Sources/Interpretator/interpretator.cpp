@@ -117,9 +117,9 @@ void interpreter::process_error (ERRORS error_code, AST::AbstractNode *node)
 
 //main funcs
 
-void start_interpretate (const AST::Tree &tree, std::vector<std::string>* program)
+void start_interpretate (const AST::Tree &tree)
 {
-    interpreter interpreter_ {program};
+    interpreter interpreter_ {};
 
     interpreter_.interpretate (interpreter_.global, tree.top_);
 
