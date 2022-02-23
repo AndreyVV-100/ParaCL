@@ -24,23 +24,24 @@ int main(int argc, char** argv)
     yy::Driver driver{argv[1]};
 
     try { driver.parse(); }  
-    catch(std::vector<std::string> errors) // ToDo: Not string? Is it possible?
+    catch (std::runtime_error e)
     { 
-        for (auto it = errors.cbegin(), itt = errors.cend(); it != itt; ++it)
-            std::cerr << *it << std::endl;
-
+        std::cout << e.what() << '\n';
         return 0;
     }
-    
-    // ToDo: #ifdef DEBUG driver.printout();
+
     std::cin.rdbuf (cin_buff);
 
-    driver.printout();
-
-    try { driver.interpretate(); }
-    catch(std::string error) 
-    { 
-        std::cerr << "Interpretator error: " << error << '\n'; 
+    if (driver.parse_err())
+        driver.print_errors();
+    else
+    {
+        try { driver.interpretate(); }  
+        catch(std::runtime_error e)
+        { 
+            std::cout << e.what() << '\n';
+            driver.print_errors();
+        }
     }
 
     return 0;

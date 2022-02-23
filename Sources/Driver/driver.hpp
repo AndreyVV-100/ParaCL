@@ -2,23 +2,26 @@
 
 #include <iostream>
 #include <numeric>
-
-#include "parser.tab.hh"
-#include <FlexLexer.h>
-#include "interpretator.hpp"
 #include <cstring>
 #include <fstream>
+#include <memory>
+
+#include <FlexLexer.h>
+#include "parser.tab.hh"
+
+#include "interpretator.hpp"
+#include "lexer.hpp"
 
 namespace yy {
 
 class Driver final {
-    FlexLexer *plex_;
+    std::unique_ptr<ParaCLlexer> plex;
     AST::Tree tree;
     std::vector<std::string> program;
     std::vector<std::string> errors;
 
 public:
-    Driver(const char* filename): plex_(new yyFlexLexer), tree{} 
+    Driver(const char* filename): plex{new ParaCLlexer}, tree{} 
     {
         std::fstream inputfile{filename, std::ios_base::in};
 
@@ -30,9 +33,11 @@ public:
         }
     }
 
-    parser::token_type yylex(parser::semantic_type *yylval) // ToDo: move to driver.cpp?
+    parser::token_type yylex(parser::semantic_type *yylval, yy::parser::location_type* location) // ToDo: move to driver.cpp?
     {
-        parser::token_type tt = static_cast<parser::token_type>(plex_->yylex());
+        *location = plex->getlocation();
+
+        parser::token_type tt = static_cast<parser::token_type>(plex->yylex());
 
         switch (tt)
         {
@@ -41,6 +46,9 @@ public:
                 break;
             case yy::parser::token_type::LAND:
                 yylval->build<AST::OpType>() = AST::OpType::LAND;
+                break;
+            case yy::parser::token_type::EQN:
+                yylval->build<AST::OpType>() = AST::OpType::EQN;
                 break;
             case yy::parser::token_type::EQU:
                 yylval->build<AST::OpType>() = AST::OpType::EQU;
@@ -74,16 +82,16 @@ public:
                 break;
             case yy::parser::token_type::NUMBER:
             case yy::parser::token_type::ZERO:			
-                yylval->build<int>() = std::stoi(plex_->YYText());
+                yylval->build<int>() = std::stoi(plex->YYText());
                 break;
             case yy::parser::token_type::WORD:
             case yy::parser::token_type::PRINT:
             case yy::parser::token_type::SCAN:
             case yy::parser::token_type::FUNC:
-                yylval->build<std::string>() = plex_->YYText();
+                yylval->build<std::string>() = plex->YYText();
                 break;
             case yy::parser::token_type::LEXERR:
-                push_error(std::string("unrecognized symbol: ") + plex_->YYText());
+                throw std::runtime_error(std::string("unrecognized symbol: ") + plex->YYText());
         }
 
         return tt;
@@ -93,31 +101,40 @@ public:
     {
         parser parser(this);
         parser.parse();
-
-        if (errors.size()) 
-            throw errors;
     }
 
     void insert(AST::AbstractNode* other) { tree.top_ = other; }
 
-    void push_error (std::string error)
+    void push_error (std::string error, yy::location location)
     {
+        std::string column{"\n"};
+        column.insert(1, location.begin.column + 9, '~');
+        column.push_back('^');
+
         errors.push_back (
-               "line: " 	+ std::to_string(plex_->lineno()) +
+               "line: " 	+ std::to_string(plex->lineno()) +
                " | error: " + error + "\n\t| " + 
-               program[plex_->lineno() - 1]
+               program[plex->lineno() - 1] + column
         );
     }
 
-    void push_err_text(std::string error)
+    void push_err_text(std::string error, yy::location location)
     {
-        if (std::strlen(plex_->YYText()))
-            push_error (error + "before \"" + plex_->YYText() + "\"");
+        if (std::strlen(plex->YYText()))
+            push_error (error + "before \"" + plex->YYText() + "\"", location);
         else 
-            push_error (error + "at the end of input");
+            push_error (error + "at the end of input", location);
     }
 
-    int getlineno() { return plex_->lineno(); }
+    bool parse_err() { return !errors.empty(); }
+
+    void print_errors() 
+    {
+        for (auto err: errors)
+            std::cout << err << '\n';
+    }
+
+    int getlineno() { return plex->lineno(); }
 
     void interpretate ()
     {
@@ -126,7 +143,7 @@ public:
 
     void printout() const { tree.PrintTree ("graph.dot"); }
 
-    ~Driver() { delete plex_; }
+    ~Driver() = default;
 };
 
 } // namespace yy

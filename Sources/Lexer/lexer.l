@@ -1,7 +1,11 @@
 %option c++
 %option yylineno
+%option yyclass="ParaCLlexer"
+
 %{ 
 #include "parser.tab.hh"
+#include "lexer.hpp"
+#define YY_USER_ACTION setlocation();
 int yyFlexLexer::yywrap() { return 1; }
 %}
 
@@ -17,6 +21,7 @@ WORD  			[_a-zA-Z]+{DIGIT}*
 {WS}                        /* skip blanks and tabs */
 "||"                    { return yy::parser::token_type::LOR;          }
 "&&"                    { return yy::parser::token_type::LAND;         }
+"!="                    { return yy::parser::token_type::EQN;          }
 "=="                    { return yy::parser::token_type::EQU;          }
 "<="                    { return yy::parser::token_type::EQL;          }
 ">="                    { return yy::parser::token_type::EQG;          }
