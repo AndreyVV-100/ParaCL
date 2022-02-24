@@ -5,7 +5,7 @@
 #include <vector>
 #include "Node.hpp"
 
-namespace interpretator
+namespace interpreter
 {
 enum class TYPES
 {
@@ -85,6 +85,7 @@ struct interpreter
 
     std::string get_error_message (ERRORS error_code, AST::AbstractNode *node);
 
+    // WARNING: this function always throw exception
     void process_error (ERRORS error_code, AST::AbstractNode *node);
 
     void interpretate (scope *scope_, AST::AbstractNode *node);

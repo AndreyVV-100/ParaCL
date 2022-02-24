@@ -17,7 +17,7 @@ namespace yy {
 class Driver final {
     std::unique_ptr<ParaCLlexer> plex;
     AST::Tree tree;
-    interpretator::interpreter interpreter_;
+    interpreter::interpreter interpreter_;
     std::vector<std::string> program;
     std::vector<std::string> errors;
 

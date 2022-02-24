@@ -1,7 +1,7 @@
 #include "interpreter.hpp"
 // ToDo: unificate codestyle?
 
-namespace interpretator
+namespace interpreter
 {
 //scope
 
@@ -109,10 +109,12 @@ std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode
     return res;
 }
 
+// WARNING: this function always throw exception
 void interpreter::process_error (ERRORS error_code, AST::AbstractNode *node)
 {
     error_message = get_error_message (error_code, node);
     error_line_number = node->lineno_;
+    throw std::runtime_error("interpreter error");
 }
 
 //main funcs
@@ -125,10 +127,7 @@ void interpreter::interpretate (scope *scope_, AST::AbstractNode *node)
     while (cur_node != nullptr)
     {
         if (cur_node->type_ != AST::NodeType::ORDER_OP)
-        {
             process_error (ERRORS::MISSED_SEMICOLON, node);
-            throw std::runtime_error("interpretator error");
-        }
 
         cur_exec_node = cur_node->left_;
 
@@ -155,10 +154,7 @@ int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
             basic_variable* find_res = scope_->find (var_node->name_);
             
             if (find_res == nullptr)
-            {
                 process_error (ERRORS::UNKNOWN_VARIABLE, node);
-                throw std::runtime_error("interpretator error");
-            }
 
             variable <int> *var = static_cast <variable <int> *> (find_res);
 
@@ -187,7 +183,7 @@ int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
 
         default:
             process_error (ERRORS::UNKNOWN_NODETYPE, node);
-            throw std::runtime_error("interpretator error");
+            break;
     }
 
     return 0;
@@ -202,19 +198,13 @@ int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_
     if ((node->op_type_ / 1000) == 1) // ToDo: 1000 = const, maybe binary?
     {
         if (node->left_ == nullptr)
-        {
             process_error (ERRORS::INCORRECT_TREE, node);
-            throw std::runtime_error("interpretator error");
-        }
     }
 
     else 
     {
         if (node->left_ == nullptr or node->right_ == nullptr)
-        {
             process_error (ERRORS::INCORRECT_TREE, node);
-            throw std::runtime_error("interpretator error");
-        }
     }
 
     if (node->op_type_ != AST::OpType::ASS)
@@ -308,7 +298,7 @@ int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_
 
         default:
             process_error (ERRORS::UNKNOWN_OPERATION, node);
-            throw std::runtime_error("interpretator error");
+            break;
     }
 
     return 0;
@@ -317,10 +307,7 @@ int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_
 int interpreter::process_assignment (scope *scope_, AST::AbstractNode *node_)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
-    {
         process_error (ERRORS::NOT_A_VARIABLE, node_);
-        throw std::runtime_error("interpretator error");
-    };
 
     Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_->left_);
 
@@ -347,20 +334,14 @@ int interpreter::process_assignment (scope *scope_, AST::AbstractNode *node_)
 int interpreter::process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
-    {
         process_error (ERRORS::NOT_A_VARIABLE, node_);
-        throw std::runtime_error("interpretator error");
-    }
 
     Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
     if (abs_var == nullptr)
-    {
         process_error (ERRORS::UNKNOWN_VARIABLE, node_);
-        throw std::runtime_error("interpretator error");
-    }
 
     variable <int> *var_value = static_cast <variable <int> *> (abs_var);
 
@@ -372,20 +353,14 @@ int interpreter::process_pre_increment (scope *scope_, AST::AbstractNode *node_,
 int interpreter::process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
-    {
         process_error (ERRORS::NOT_A_VARIABLE, node_);
-        throw std::runtime_error("interpretator error");
-    }
 
     Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
     if (abs_var == nullptr)
-    {
         process_error (ERRORS::UNKNOWN_VARIABLE, node_);
-        throw std::runtime_error("interpretator error");
-    }
 
     variable <int> *var_value = static_cast <variable <int> *> (abs_var);
 
@@ -399,10 +374,7 @@ int interpreter::process_post_increment (scope *scope_, AST::AbstractNode *node_
 int interpreter::process_condition_node (scope *scope_, AST::AbstractNode *node_)
 {
     if (node_->left_ == nullptr)
-    {
         process_error (ERRORS::EMPTY_CONDITION, node_);
-        throw std::runtime_error("interpretator error");
-    }
 
     scope *cur_scope = scope_;
 
@@ -424,7 +396,7 @@ int interpreter::process_condition_node (scope *scope_, AST::AbstractNode *node_
         
         default:
             process_error (ERRORS::UNKNOWN_COND_OP, node_);
-            throw std::runtime_error("interpretator error");
+            break;
     }
 
     return 1;
@@ -437,20 +409,13 @@ int interpreter::process_funccall_node (scope  *scope_, AST::AbstractNode *node)
     Node::FunctionCallNode *func_node = static_cast <Node::FunctionCallNode*> (node);
 
     if (!func_node->name_.compare (std::string {"?"}))
-    {
         std::cin >> res;
-    }
 
     else if (!func_node->name_.compare (std::string {"print"}))
-    {
         std::cout << process_node (scope_, node->left_) << std::endl;
-    }
 
     else
-    {
         process_error (ERRORS::UNKNOWN_FUNC, node);
-        throw std::runtime_error("interpretator error");
-    }
 
     return res;
 }
