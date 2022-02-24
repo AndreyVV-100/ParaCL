@@ -1,0 +1,3 @@
+line: 1 | error: wrong syntax in 'if'
+	| if(1);
+~~~~~~~~~~^

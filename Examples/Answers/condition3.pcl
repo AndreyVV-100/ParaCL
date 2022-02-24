@@ -1,0 +1,12 @@
+line: 1 | error: wrong syntax in 'if'
+	| if{{2})
+~~~~~~~~~~^
+line: 1 | error: expected ';' before "}"
+	| if{{2})
+~~~~~~~~~~~~~~^
+line: 2 | error: expected primary-expression before token ')'
+	| {
+~~~~~~~~~~~~~~~~^
+line: 2 | error: expected ';' before "{"
+	| {
+~~~~~~~~~~~~~~~~^

@@ -1,0 +1,9 @@
+line: 1 | error: expected ';' before ")"
+	| 4)+(5-
+~~~~~~~~~~^
+line: 1 | error: expected primary-expression before token ')'
+	| 4)+(5-
+~~~~~~~~~~~^
+line: 1 | error: expected primary-expression at the end of input
+	| 4)+(5-
+~~~~~~~~~~~~~~~^

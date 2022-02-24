@@ -1,0 +1,3 @@
+line: 1 | error: expected ';' at the end of input
+	| 2+3
+~~~~~~~~~~~~^

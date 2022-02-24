@@ -1,0 +1,6 @@
+line: 1 | error: expected primary-expression before token '*'
+	| a=*2;
+~~~~~~~~~~~~^
+line: 1 | error: expected ';' before "2"
+	| a=*2;
+~~~~~~~~~~~~^

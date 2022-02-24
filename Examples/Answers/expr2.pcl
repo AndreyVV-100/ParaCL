@@ -1,0 +1,3 @@
+line: 1 | error: expected ';' before "}"
+	| 2+3-2};
+~~~~~~~~~~~~~~^

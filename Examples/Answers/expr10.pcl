@@ -1,0 +1,18 @@
+line: 1 | error: expected primary-expression before ";"
+	| a=5*;
+~~~~~~~~~~~~~^
+line: 2 | error: expected primary-expression before token '*'
+	| while (*1)
+~~~~~~~~~~~~~~~~~^
+line: 2 | error: expected ')' before "1"
+	| while (*1)
+~~~~~~~~~~~~~~~~^
+line: 2 | error: wrong syntax in 'while'
+	| while (*1)
+~~~~~~~~~~^
+line: 5 | error: expected primary-expression before token '*'
+	|     *7;
+~~~~~~~~~~~~~~^
+line: 5 | error: expected ';' before "7"
+	|     *7;
+~~~~~~~~~~~~~~^

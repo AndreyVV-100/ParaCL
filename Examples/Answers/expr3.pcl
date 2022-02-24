@@ -1,0 +1,6 @@
+line: 1 | error: expected ';' before ")"
+	| 2+3-2);
+~~~~~~~~~~~~~~^
+line: 1 | error: expected primary-expression before token ')'
+	| 2+3-2);
+~~~~~~~~~~~~~~~^
