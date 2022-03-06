@@ -3,37 +3,6 @@
 
 namespace AST
 {
-    Tree :: ~Tree()
-    {
-        AbstractNode* node_deleter = top_;
-
-        while (node_deleter)
-        {
-            // ToDo: copypaste?
-
-            if (node_deleter->left_)
-            {
-                AbstractNode* left  = node_deleter->left_;
-                node_deleter->left_ = nullptr;
-                node_deleter = left;
-                continue;
-            }
-
-            if (node_deleter->right_)
-            {
-                AbstractNode* right  = node_deleter->right_;
-                node_deleter->right_ = nullptr;
-                node_deleter = right;
-                continue;
-            }
-
-            // ToDo: check left_->prev_ == now
-            AbstractNode* prev  = node_deleter->prev_;
-            delete node_deleter;
-            node_deleter = prev;
-        }
-    }
-
     void Tree::PrintTree (const std::string& filename) const
     {
         if (!top_) { return; }
@@ -68,6 +37,50 @@ namespace AST
         top_->GraphPrintHeaders     (output);
         top_->GraphPrintConnections (output);
         output << "}\n";
+    }
+
+    AbstractNode :: ~AbstractNode()
+    {
+        if (prev_)
+        {
+            if (prev_->left_ == this)
+                prev_->left_ = nullptr;
+            if (prev_->right_ == this)
+                prev_->right_ = nullptr;
+
+            prev_ = nullptr;
+        }
+
+        AbstractNode* node_deleter = this;
+
+        while (node_deleter)
+        {
+            // ToDo: copypaste?
+
+            if (node_deleter->left_)
+            {
+                AbstractNode* left  = node_deleter->left_;
+                node_deleter->left_ = nullptr;
+                node_deleter = left;
+                continue;
+            }
+
+            if (node_deleter->right_)
+            {
+                AbstractNode* right  = node_deleter->right_;
+                node_deleter->right_ = nullptr;
+                node_deleter = right;
+                continue;
+            }
+
+            // ToDo: check left_->prev_ == now
+            AbstractNode* prev  = node_deleter->prev_;
+
+            if (prev)
+                delete node_deleter; // ToDo: It's recursive with deep = 1, OK?
+
+            node_deleter = prev;
+        }
     }
 
     void AbstractNode::GraphPrintConnections (std::ostream& output) const

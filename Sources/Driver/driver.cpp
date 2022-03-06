@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 
+void parse (yy::Driver& driver);
+
 int main(int argc, char** argv) 
 {
     if (argc != 2)
@@ -23,7 +25,7 @@ int main(int argc, char** argv)
 
     yy::Driver driver{argv[1]};
 
-    try { driver.parse(); }  
+    try { parse (driver); }  
     catch (std::runtime_error e)
     { 
         std::cout << e.what() << '\n';
@@ -38,4 +40,10 @@ int main(int argc, char** argv)
     driver.print_errors();
 
     return 0;
+}
+
+void parse (yy::Driver& driver)
+{
+    yy::parser parser (&driver);
+    parser.parse();
 }

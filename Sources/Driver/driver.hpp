@@ -98,13 +98,7 @@ public:
         return tt;
     }
 
-    void parse()
-    {
-        parser parser(this);
-        parser.parse();
-    }
-
-    void insert(AST::AbstractNode* other) { tree.top_ = other; }
+    void insert(AST::AbstractNode* other) { tree.ChangeTop (other); }
 
     void push_error (std::string error, yy::location location)
     {
@@ -131,7 +125,7 @@ public:
 
     void print_errors() 
     {
-        for (auto err: errors)
+        for (auto&& err: errors)
             std::cout << err << '\n';
     }
 
@@ -139,7 +133,7 @@ public:
 
     void interpretate ()
     {
-        try { interpreter_.interpretate (interpreter_.global, tree.top_); }
+        try { interpreter_.interpretate (interpreter_.global, tree.GetTop()); }
         catch (std::runtime_error e)
         { 
             std::cout << e.what() << '\n';

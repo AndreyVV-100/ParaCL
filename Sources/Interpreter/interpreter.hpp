@@ -83,28 +83,28 @@ struct interpreter
 
     ~interpreter() { delete global; }
 
-    std::string get_error_message (ERRORS error_code, AST::AbstractNode *node);
+    std::string get_error_message (ERRORS error_code, const AST::AbstractNode *node);
 
     // WARNING: this function always throw exception
-    void process_error (ERRORS error_code, AST::AbstractNode *node);
+    void process_error (ERRORS error_code, const AST::AbstractNode *node);
 
-    void interpretate (scope *scope_, AST::AbstractNode *node);
+    void interpretate (scope *scope_, const AST::AbstractNode *node);
 
-    int process_node (scope *scope_, AST::AbstractNode *node);
+    int process_node (scope *scope_, const AST::AbstractNode *node);
 
-    int process_operation_node (scope *scope_, AST::AbstractNode *node_);
+    int process_operation_node (scope *scope_, const AST::AbstractNode *node_);
 
-    int process_assignment (scope *scope_, AST::AbstractNode *node_);
+    int process_assignment (scope *scope_, const AST::AbstractNode *node_);
 
-    int process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val);
+    int process_pre_increment (scope *scope_, const AST::AbstractNode *node_, int extra_val);
 
-    int process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val);
+    int process_post_increment (scope *scope_, const AST::AbstractNode *node_, int extra_val);
 
-    int process_condition_node (scope *scope_, AST::AbstractNode *node);
+    int process_condition_node (scope *scope_, const AST::AbstractNode *node);
 
-    int process_funccall_node (scope  *scope_, AST::AbstractNode *node);
+    int process_funccall_node (scope  *scope_, const AST::AbstractNode *node);
 
-    void process_scope_node (scope  *scope_, AST::AbstractNode *node);
+    void process_scope_node (scope  *scope_, const AST::AbstractNode *node);
 };
 
 void start_interpretate (const AST::Tree &tree);

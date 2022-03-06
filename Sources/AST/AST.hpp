@@ -63,25 +63,6 @@ enum class CondType
     WHILE = 1
 };
 
-struct AbstractNode;
-
-struct Tree final
-{
-    // ToDo: private?
-    AbstractNode* top_ = nullptr;
-
-    Tree (const Tree&) = delete;
-    Tree (Tree&&) = delete;
-    Tree& operator = (const Tree&) = delete;
-    Tree& operator = (Tree&&) = delete;
-
-    Tree() = default;
-    ~Tree();
-
-    void PrintTree (const std::string& filename) const; // ToDo: output filename?
-    void PrintTree (std::ostream& output = std::cout) const;
-};
-
 // ToDo: class or struct, non-private fields? How to get access in child?
 struct AbstractNode
 {
@@ -106,7 +87,7 @@ struct AbstractNode
         if (right_) right_->prev_ = this;
     }
     
-    virtual ~AbstractNode() = default;
+    virtual ~AbstractNode();
 
     AbstractNode (const AbstractNode&) = delete;
     AbstractNode (AbstractNode&&) = delete;
@@ -119,6 +100,37 @@ struct AbstractNode
     virtual void GraphPrintInfo (std::ostream& output) const = 0;
 
     // ToDo: SetPrev() ?
+};
+
+class Tree final
+{
+    AbstractNode* top_ = nullptr;
+
+public:
+    Tree (const Tree&) = delete;
+    Tree (Tree&&) = delete;
+    Tree& operator = (const Tree&) = delete;
+    Tree& operator = (Tree&&) = delete;
+
+    Tree() = default;
+    ~Tree()
+    {
+        delete top_;
+    }
+
+    void ChangeTop (AbstractNode* new_top)
+    {
+        delete top_;
+        top_ = new_top;
+    }
+
+    const AbstractNode* GetTop() // ToDo: const annotation? How to ban delete GetTop();?
+    {
+        return top_;
+    }
+
+    void PrintTree (const std::string& filename) const; // ToDo: output filename?
+    void PrintTree (std::ostream& output = std::cout) const;
 };
 
     AbstractNode* MakeVal   (int val,            int lineno);

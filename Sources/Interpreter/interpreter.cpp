@@ -33,7 +33,7 @@ basic_variable* scope::find (std::string name) const
 
 //error processing
 
-std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode *node)
+std::string interpreter::get_error_message (ERRORS error_code, const AST::AbstractNode *node)
 {
     int row_number = node->lineno_;
 
@@ -49,14 +49,14 @@ std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode
 
         case ERRORS::UNKNOWN_FUNC:
         {
-            Node::FunctionCallNode *func_node = static_cast <Node::FunctionCallNode*> (node);
+            const Node::FunctionCallNode *func_node = static_cast <const Node::FunctionCallNode*> (node);
             res = std::string {"Unknown function with name \""} + func_node->name_ + std::string {"\"\n"};
             break;
         }
 
         case ERRORS::UNKNOWN_VARIABLE:
         {
-            Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node);
+            const Node::VariableNode *var_node = static_cast <const Node::VariableNode*> (node);
             res = std::string {"Unknown variable \""} + var_node->name_ + std::string {"\"\n"};
             break;
         }
@@ -75,7 +75,7 @@ std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode
 
         case ERRORS::UNKNOWN_OPERATION:
         {
-            Node::OperationNode* op_node = static_cast <Node::OperationNode*> (node);
+            const Node::OperationNode* op_node = static_cast <const Node::OperationNode*> (node);
             res = std::string {"Unknown operation code \""} + std::to_string (op_node->op_type_) + std::string {"\"\n"};
             break;
         }
@@ -88,7 +88,7 @@ std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode
 
         case ERRORS::UNKNOWN_COND_OP:
         {
-            Node::ConditionNode* cond_node = static_cast <Node::ConditionNode*> (node);
+            const Node::ConditionNode* cond_node = static_cast <const Node::ConditionNode*> (node);
             res = std::string {"Unknown conditional block \""} + std::to_string (static_cast <int> (cond_node->cond_type_)) + std::string {"\"\n"};
             break;
         }
@@ -110,7 +110,7 @@ std::string interpreter::get_error_message (ERRORS error_code, AST::AbstractNode
 }
 
 // WARNING: this function always throw exception
-void interpreter::process_error (ERRORS error_code, AST::AbstractNode *node)
+void interpreter::process_error (ERRORS error_code, const AST::AbstractNode *node)
 {
     error_message = get_error_message (error_code, node);
     error_line_number = node->lineno_;
@@ -119,10 +119,10 @@ void interpreter::process_error (ERRORS error_code, AST::AbstractNode *node)
 
 //main funcs
 
-void interpreter::interpretate (scope *scope_, AST::AbstractNode *node)
+void interpreter::interpretate (scope *scope_, const AST::AbstractNode *node)
 {
-    AST::AbstractNode *cur_node = node;
-    AST::AbstractNode *cur_exec_node = nullptr;
+    const AST::AbstractNode *cur_node = node;
+    const AST::AbstractNode *cur_exec_node = nullptr;
 
     while (cur_node != nullptr)
     {
@@ -140,7 +140,7 @@ void interpreter::interpretate (scope *scope_, AST::AbstractNode *node)
     }
 }
 
-int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
+int interpreter::process_node (scope *scope_, const AST::AbstractNode *node)
 {
     if (node == nullptr)
         return 0;
@@ -149,7 +149,7 @@ int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
     {
         case AST::NodeType::VARIABLE:
         {
-            Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node);
+            const Node::VariableNode *var_node = static_cast <const Node::VariableNode*> (node);
 
             basic_variable* find_res = scope_->find (var_node->name_);
             
@@ -163,7 +163,7 @@ int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
 
         case AST::NodeType::CONST:
         {
-            Node::ConstNode *const_node = static_cast <Node::ConstNode*> (node);
+            const Node::ConstNode *const_node = static_cast <const Node::ConstNode*> (node);
 
             return const_node->value_;
         }
@@ -189,9 +189,9 @@ int interpreter::process_node (scope *scope_, AST::AbstractNode *node)
     return 0;
 }
 
-int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_)
+int interpreter::process_operation_node (scope *scope_, const AST::AbstractNode *node_)
 {
-    Node::OperationNode *node = static_cast <Node::OperationNode*> (node_);
+    const Node::OperationNode *node = static_cast <const Node::OperationNode*> (node_);
 
     int left_val = 0, right_val = 0;
     
@@ -304,12 +304,12 @@ int interpreter::process_operation_node (scope *scope_, AST::AbstractNode *node_
     return 0;
 }
 
-int interpreter::process_assignment (scope *scope_, AST::AbstractNode *node_)
+int interpreter::process_assignment (scope *scope_, const AST::AbstractNode *node_)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
         process_error (ERRORS::NOT_A_VARIABLE, node_);
 
-    Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_->left_);
+    const Node::VariableNode *var_node = static_cast <const Node::VariableNode*> (node_->left_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
@@ -331,12 +331,12 @@ int interpreter::process_assignment (scope *scope_, AST::AbstractNode *node_)
     return right_res;
 }
 
-int interpreter::process_pre_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
+int interpreter::process_pre_increment (scope *scope_, const AST::AbstractNode *node_, int extra_val)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
         process_error (ERRORS::NOT_A_VARIABLE, node_);
 
-    Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
+    const Node::VariableNode *var_node = static_cast <const Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
@@ -350,12 +350,12 @@ int interpreter::process_pre_increment (scope *scope_, AST::AbstractNode *node_,
     return var_value->value;
 }
 
-int interpreter::process_post_increment (scope *scope_, AST::AbstractNode *node_, int extra_val)
+int interpreter::process_post_increment (scope *scope_, const AST::AbstractNode *node_, int extra_val)
 {
     if (node_->left_->type_ != AST::NodeType::VARIABLE)
         process_error (ERRORS::NOT_A_VARIABLE, node_);
 
-    Node::VariableNode *var_node = static_cast <Node::VariableNode*> (node_);
+    const Node::VariableNode *var_node = static_cast <const Node::VariableNode*> (node_);
 
     basic_variable *abs_var = scope_->find (var_node->name_);
 
@@ -371,14 +371,14 @@ int interpreter::process_post_increment (scope *scope_, AST::AbstractNode *node_
     return res; 
 }
 
-int interpreter::process_condition_node (scope *scope_, AST::AbstractNode *node_)
+int interpreter::process_condition_node (scope *scope_, const AST::AbstractNode *node_)
 {
     if (node_->left_ == nullptr)
         process_error (ERRORS::EMPTY_CONDITION, node_);
 
     scope *cur_scope = scope_;
 
-    Node::ConditionNode *cond_node = static_cast <Node::ConditionNode*> (node_);
+    const Node::ConditionNode *cond_node = static_cast <const Node::ConditionNode*> (node_);
 
     switch (cond_node->cond_type_)
     {
@@ -402,11 +402,11 @@ int interpreter::process_condition_node (scope *scope_, AST::AbstractNode *node_
     return 1;
 }
 
-int interpreter::process_funccall_node (scope  *scope_, AST::AbstractNode *node)
+int interpreter::process_funccall_node (scope  *scope_, const AST::AbstractNode *node)
 {
     int res = 0;
 
-    Node::FunctionCallNode *func_node = static_cast <Node::FunctionCallNode*> (node);
+    const Node::FunctionCallNode *func_node = static_cast <const Node::FunctionCallNode*> (node);
 
     if (!func_node->name_.compare (std::string {"?"}))
         std::cin >> res;
@@ -420,7 +420,7 @@ int interpreter::process_funccall_node (scope  *scope_, AST::AbstractNode *node)
     return res;
 }
 
-void interpreter::process_scope_node (scope  *scope_, AST::AbstractNode *node)
+void interpreter::process_scope_node (scope  *scope_, const AST::AbstractNode *node)
 {
     scope* cur_scope = nullptr;
 
