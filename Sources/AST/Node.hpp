@@ -1,4 +1,5 @@
 #include "AST.hpp"
+#include "semantic.hpp"
 
 namespace Node
 {
@@ -104,8 +105,11 @@ struct OrderNode final: public AbstractNode
 
 struct ScopeNode final: public AbstractNode
 {
+    semantic::Scope scope_;
+
     ScopeNode (int lineno, AbstractNode *lhs, AbstractNode *prev = nullptr):
-        AbstractNode (NodeType::SCOPE, lineno, lhs, prev)
+        AbstractNode (NodeType::SCOPE, lineno, lhs, prev),
+        scope_ (nullptr)
     { ; }
 
     void GraphPrintInfo (std::ostream& output) const override

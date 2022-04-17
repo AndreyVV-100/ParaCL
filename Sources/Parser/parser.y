@@ -101,7 +101,10 @@ AST::AbstractNode* BindNodes(AST::OpType op_type, int lineno,
 
 %%
 
-program: STMS                                    { driver->insert($1); }
+program: STMS                                    {
+                                                     AST::AbstractNode* global_scope = AST::MakeScope (driver->getlineno(), $1);
+                                                     driver->insert (global_scope); 
+                                                 }
 
 STMS: STM STMS                                   { $$ = AST::MakeORD(driver->getlineno(), $1, $2); }
     | %empty                                     { $$ = nullptr; }

@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/Sources/AST/AST.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Driver/driver.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Interpreter/interpreter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Semantic/semantic.cpp
   ${BISON_parser_OUTPUTS}
   ${FLEX_scanner_OUTPUTS}
 )
@@ -32,5 +33,6 @@ target_include_directories(${PROJECT_NAME}
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Driver
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Interpreter
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Lexer
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Semantic
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )
